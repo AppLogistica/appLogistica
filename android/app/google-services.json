@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "839048842126",
+    "project_id": "applogistica-599aa",
+    "storage_bucket": "applogistica-599aa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:839048842126:android:abbe17152665d4d593f2df",
+        "android_client_info": {
+          "package_name": "com.AppLogistica"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "839048842126-thbg9t7pv7qjefch5jdluu7ud8j30027.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPd-4HlWna0bnEaYd2dGdISVqnl5H1ioI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "839048842126-thbg9t7pv7qjefch5jdluu7ud8j30027.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
