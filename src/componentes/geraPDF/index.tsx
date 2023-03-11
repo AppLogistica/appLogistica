@@ -51,7 +51,7 @@ export async function print(recibo: SemanaProps) {
   const minutos = data.getMinutes();
   const horaMinuto = `${hora}`.padStart(2, '0') + ':' + `${minutos}`.padStart(2, '0')
 
-  let NomeFornecedor = 'aaaaaaaaa';
+  let NomeFornecedor = '';
 
   const fornec = firestore().collection('fornecedor').doc(`${recibo.id_fornecedor}`);
   const doc = await fornec.get();

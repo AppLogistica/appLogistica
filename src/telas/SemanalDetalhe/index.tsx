@@ -21,6 +21,7 @@ import { AntDesign } from '@expo/vector-icons';
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { Rotas } from "../../rotas";
 import { LocationObject } from "expo-location";
+import { EnviaNotify } from "../../componentes/fireNotify/envia";
 
 
 type selectProps = {
@@ -29,26 +30,6 @@ type selectProps = {
 };
 
 export function SemanalDetalhe() {
-  /*
-    async function mostra() {
-      await notifee.requestPermission();
-  
-      const channelId = await notifee.createChannel({
-        id: 'NoficicaStatus',
-        name: 'Status',
-        vibration: true,
-        importance: AndroidImportance.HIGH
-      });
-  
-      await notifee.displayNotification({
-        id: 'ola',
-        title: 'teste 1',
-        body: 'passamo pohaaa',
-        android: {
-          channelId
-        }
-      })
-    }*/
 
   const route = useRoute();
   const navigation = useNavigation();
@@ -274,6 +255,17 @@ export function SemanalDetalhe() {
         hora: horaMinuto
       })
     }
+    console.log(id_status, id_local);
+    if (id_status === 2 && id_local === 3) {
+      const caixa = firestore().collection('caixa').doc(`${id_status}`)
+
+      const doc = await caixa.get();
+      if (doc.exists) {
+
+        EnviaNotify(dadosSemanal);
+      }
+
+    }
 
     if (!desativarFinal) {
       Finalizar();
@@ -437,8 +429,8 @@ export function SemanalDetalhe() {
               <Button
                 title="teste"
                 style={[{ marginBottom: 20 }, styles.buttonPdf]}
-                onPress={() => print(dadosSemanal)}
-              />       
+                onPress={EnviaNotify}
+              />  
 
 <Button
                 title="Finalizar"

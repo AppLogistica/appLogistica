@@ -30,7 +30,7 @@ const inserir = (obj: CaixaProps) => {
       //comando SQL modificável
       tx.executeSql(
         'insert into caixa (id_caixa, nome, id_status, id_local, Latitude, Longitude) values (?, ?, ?, ?, ?, ?);',
-        [obj.id, obj.nome, obj.id_status, obj.id_local, obj.latitude, obj.longitude],
+        [obj.id, obj.nome, obj.id_status, obj.id_local, obj.Latitude, obj.Longitude],
         //-----------------------
         (_, { rowsAffected, insertId }) => {
           if (rowsAffected > 0) resolve(insertId);

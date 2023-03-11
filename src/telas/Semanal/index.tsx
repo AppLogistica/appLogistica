@@ -50,7 +50,6 @@ export function Semanal() {
   const [meuToken, setMeuToken] = useState('');
   const navigation = useNavigation();
 
-
   function handleDetalhes({ id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo }: SemanaProps) {
 
     navigation.navigate('semanalDetalhes', { id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo });
@@ -89,10 +88,8 @@ export function Semanal() {
       });
     return () => subscribe();
 
-    console.log(dadosSemana);
-    
   }
-
+// @ts-ignore
   const handleMessagingToken = async token => {
     console.log('handleMessagingToken', token);
     setMeuToken(token);
@@ -100,13 +97,13 @@ export function Semanal() {
       asToken: token
     })
   }
-
+// @ts-ignore
   const handleMessageReceived = messsage => {
     createAndroidNotificationChannels(messsage);
     console.log('handleMessageReceived', messsage);
 
   }
-
+// @ts-ignore
   const handleNotificationOpenApp = message => {
     console.log('handleNotificationOpenApp', message);
 
@@ -143,43 +140,11 @@ export function Semanal() {
     }
   }
 
-  async function aaaa() {
-    const message = {
-
-
-      message: {
-        topic: "subscriber-updates",
-        notification: {
-          body: "This week's edition is now available.",
-          title: "NewsMagazine.com",
-        },
-        data: {
-          volume: "3.21.15",
-          contents: "http://www.news-magazine.com/world-week/21659772"
-        },
-        android: {
-          priority: "normal"
-        },
-        webpush: {
-          headers: {
-            Urgency: "high"
-          }
-        }
-      }
-
-
-    };
-
-    console.log(message);
-
-  }
-
   useEffect(() => {
 
     handleInitialNotification();
     pegaDadosSemana();
     messaging().registerDeviceForRemoteMessages
-    console.log('registrado?', messaging().isDeviceRegisteredForRemoteMessages);
 
     messaging().getToken().then(handleMessagingToken);
     const removeTokenRefresh = messaging().onTokenRefresh(handleMessagingToken);
