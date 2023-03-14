@@ -51,7 +51,7 @@ const update = (id: number, obj: CaixaProps | undefined) => {
       //comando SQL modificável
       tx.executeSql(
         'UPDATE caixa SET nome=?, id_local=?, id_status=2, latitude=?, longitude=? WHERE id_caixa=?;',
-        [`${obj?.nome}`, `${obj?.id_local}`, `${obj?.latitude}`, `${obj?.longitude}`, id],
+        [`${obj?.nome}`, `${obj?.id_local}`, `${obj?.Latitude}`, `${obj?.Longitude}`, id],
         //-----------------------
         (_, { rowsAffected }) => {
           if (rowsAffected > 0) resolve(rowsAffected);
