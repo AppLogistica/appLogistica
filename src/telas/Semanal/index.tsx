@@ -16,7 +16,7 @@ import { NotificacaoListener, PermissaoUsuario } from "../../componentes/Notific
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import notifee, { AndroidImportance } from '@notifee/react-native';
 
-//import { supabase } from "../../componentes/Supabase/database";
+import { supabase } from "../../componentes/Supabase/database";
 //import { Sincroniza } from "../../componentes/DatabaseSQLite/SincronizaDados";
 //import { carregaSQLite } from "../../componentes/DatabaseSQLite/CriaTabelas";
 
@@ -35,7 +35,6 @@ interface menssagem {
 }
 
 database().setPersistenceEnabled(true);
-database().setPersistenceCacheSizeBytes(100000000); // 100MB
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
   console.log('Message handled in the background!', remoteMessage);
@@ -45,14 +44,14 @@ export function Semanal() {
 
   const [date, setDate] = useState(dayjs().locale('pt-br'));
   const [dadosSemana, setDadosSemana] = useState<SemanaProps[]>([]);
-  const [dadosCaixa, setDadosCaixa] = useState<CaixaProps>();
+  // const [dadosCaixa, setDadosCaixa] = useState<CaixaProps>();
   const [filtro, setFiltro] = useState('Todos');
   const [meuToken, setMeuToken] = useState('');
   const navigation = useNavigation();
 
-  function handleDetalhes({ id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo }: SemanaProps) {
+  function handleDetalhes({ id_semana, data_, id_fornecedor, id_caixa, inserido_em, id, status, ativo }: SemanaProps) {
 
-    navigation.navigate('semanalDetalhes', { id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo });
+    navigation.navigate('semanalDetalhes', { id_semana, data_, id_fornecedor, id_caixa, inserido_em, id, status, ativo });
 
   }
 
@@ -68,42 +67,21 @@ export function Semanal() {
     return item.ativo === filtro
   })
 
-  async function pegaDadosSemana() {
-
-    const subscribe = await firestore()
-      .collection('semana')
-      .where('data', '==', date.format('DD/MM/YYYY'))
-      // .where('ativo', '==', filtro)
-      .onSnapshot(querySnapshot => {
-        const data = querySnapshot.docs.map(doc => {
-
-          return {
-            id: doc.id,
-            ...doc.data()
-          }
-        }) as SemanaProps[];
-
-        setDadosSemana(data);
-
-      });
-    return () => subscribe();
-
-  }
-// @ts-ignore
+  // @ts-ignore
   const handleMessagingToken = async token => {
-    console.log('handleMessagingToken', token);
+    // console.log('handleMessagingToken', token);
     setMeuToken(token);
     await firestore().collection('tokens').doc(token).set({
       asToken: token
     })
   }
-// @ts-ignore
+  // @ts-ignore
   const handleMessageReceived = messsage => {
     createAndroidNotificationChannels(messsage);
     console.log('handleMessageReceived', messsage);
 
   }
-// @ts-ignore
+  // @ts-ignore
   const handleNotificationOpenApp = message => {
     console.log('handleNotificationOpenApp', message);
 
@@ -140,10 +118,45 @@ export function Semanal() {
     }
   }
 
+  async function attSemana() {
+
+    let { data, error } = await supabase
+      .from('semana')
+      .select('*')
+      .eq('data_', date.format('YYYY-MM-DD'));
+
+    if (error) {
+      console.log(error);
+    }
+
+    setDadosSemana([]);
+
+    setDadosSemana(data as SemanaProps[]);
+  }
+
+  supabase.channel('custom-all-channel')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'semana' },
+      (payload) => {
+        console.log('Change received!', payload)
+        
+        attSemana();
+        return(
+          renderListSemana()
+        )
+      }
+    )
+    .subscribe();
+
+
   useEffect(() => {
 
     handleInitialNotification();
-    pegaDadosSemana();
+
+
+    attSemana();
+
     messaging().registerDeviceForRemoteMessages
 
     messaging().getToken().then(handleMessagingToken);
@@ -160,6 +173,25 @@ export function Semanal() {
   }, [date]);
 
   const diaDaSemana = date.format('dddd');
+
+  const renderListSemana = () => {
+    return (
+      <FlatList
+        data={filtro != 'Todos' ? dadosFiltrados : dadosSemana}
+        keyExtractor={item => JSON.stringify(item.id_semana)}
+        style={[{ marginBottom: 80 }]}
+
+        renderItem={({ item }) => (
+          <SemanalCard
+            SemanaDados={item}
+            margem={50}
+            onPress={() => handleDetalhes(item)}
+          />)}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.contentList}
+      />
+    );
+  };
 
   return (
     <NativeBaseProvider>
@@ -232,20 +264,8 @@ export function Semanal() {
               ]}><Text>Finalizado</Text></TouchableOpacity>
           </View>
 
-          <FlatList
-            data={filtro != 'Todos' ? dadosFiltrados : dadosSemana}
-            keyExtractor={item => JSON.stringify(item.id_semana)}
-            style={[{ marginBottom: 80 }]}
+          {renderListSemana()}
 
-            renderItem={({ item }) => (
-              <SemanalCard
-                SemanaDados={item}
-                margem={50}
-                onPress={() => handleDetalhes(item)}
-              />)}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.contentList}
-          />
         </SafeAreaView>
       </Background>
     </NativeBaseProvider>

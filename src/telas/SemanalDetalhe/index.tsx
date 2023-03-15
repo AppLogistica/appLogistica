@@ -12,15 +12,18 @@ import { CaixaProps, LocalCaixaProps, SemanalCard, SemanaProps } from "../../com
 import { styles } from "./styles";
 import firestore, { firebase } from '@react-native-firebase/firestore'
 import { SelectList } from 'react-native-dropdown-select-list'
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
+import 'dayjs/locale/pt-br';
 import { print } from "../../componentes/geraPDF";
-import notifee, { AndroidImportance } from '@notifee/react-native';
-import { sendFCMMessage } from "../../componentes/Notificacao/Envio";
+//import notifee, { AndroidImportance } from '@notifee/react-native';
+//import { sendFCMMessage } from "../../componentes/Notificacao/Envio";
 import { AntDesign } from '@expo/vector-icons';
 
-import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
-import { Rotas } from "../../rotas";
+//import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+//import { Rotas } from "../../rotas";
 import { LocationObject } from "expo-location";
+//import { EnviaNotify } from "../../componentes/fireNotify/envia";
+import { supabase } from "../../componentes/Supabase/database";
 import { EnviaNotify } from "../../componentes/fireNotify/envia";
 
 
@@ -39,7 +42,6 @@ export function SemanalDetalhe() {
   const [location, setLocation] = useState<LocationObject | null>();
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
-
 
   const dadosLocal: LocalCaixaProps[] = [];
   const [errorMsg, setErrorMsg] = useState({});
@@ -62,7 +64,6 @@ export function SemanalDetalhe() {
   const [atualCaixaStatus, setAtualCaixaStatus] = useState(-1);
 
   const desativarFinal = selecLocalCarga === 'FABRICA' && selectCaixaStatus === 'VAZIA' && dadosSemanal.id_caixa ? false : true;
-  //const DesativarRecibo = selecLocalCarga === 'CAMINHÃO' && selectCaixaStatus === 'CHEIA' && dadosSemanal.id_caixa ? false : true;
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -93,10 +94,15 @@ export function SemanalDetalhe() {
       setLatitude(location.coords.latitude);
       setLongitude(location.coords.longitude);
 
-      firestore().collection('caixa').doc(`${dadosSemanal.id_caixa}`).update({
+      const { data: upLocalCaixa, error: localCaixaErr } = await supabase.from('caixa').update({
         Latitude: location.coords.latitude,
         Longitude: location.coords.longitude,
-      })
+      }).eq('id_caixa', dadosSemanal.id_caixa)
+
+      if (localCaixaErr) {
+        console.log('localCaixaErr',localCaixaErr);
+        return
+      }
     }
     else {
       Alert.alert('Primeiro vincule uma caixa!')
@@ -106,24 +112,27 @@ export function SemanalDetalhe() {
   }
 
   async function pegaDadosCaixas() {
+
+    let { data: Dadoscaixa, error }
+      = await supabase.from('caixa')
+        .select('id_caixa, nome')
+        .eq('livre', true)
+        .order('id_caixa');
+
+    if (error) {
+      console.log('data: Dadoscaixa',error);
+      return
+    }
+
     const tamanho = numCaixa.length
 
     for (let i = 0; i < tamanho; i++) {
-
       numCaixa.pop();
     }
 
-    const caixas = firestore().collection('caixa');
-    const snapshot = await caixas.where('livre', '==', true).get();
-    if (snapshot.empty) {
-      console.log('Documento não encontrado!');
-      return;
-    }
-
-    snapshot.forEach(doc => {
-      numCaixa.push({ key: doc.id, value: doc.id.padStart(2, '0') });
-    });
-
+    Dadoscaixa?.forEach(doc => {
+      numCaixa.push({ key: doc.id_caixa, value: doc.nome });
+    })
   }
 
   function confirmaAlteraçãoCaixa(idCaixa: number): Promise<boolean> {
@@ -140,7 +149,6 @@ export function SemanalDetalhe() {
       );
     });
   }
-
 
   function confirmaFinal(): Promise<boolean> {
     return new Promise((resolve) => {
@@ -160,17 +168,24 @@ export function SemanalDetalhe() {
 
   async function Finalizar() {
 
-    firestore().collection('caixa').doc(`${dadosSemanal.id_caixa}`).update({
+    const { data: finalCaixa, error: finalCaixaErr } = await supabase.from('caixa').update({
       Latitude: null,
       Longitude: null,
       livre: true
+    }).eq('id_caixa', dadosSemanal.id_caixa);
 
-    })
+    if (finalCaixaErr) {
+      console.log('finalCaixaErr',finalCaixaErr);
+    }
 
-    firestore().collection('semana').doc(dadosSemanal.id).update({
-      status: '',
+    const { data: finalSemana, error: finalSemanaErr } = await supabase.from('semana').update({
+      status: null,
       ativo: 'Finalizado'
-    })
+    }).eq('id_semana', dadosSemanal.id_semana)
+
+    if (finalSemanaErr) {
+      console.log('finalSemanaErr',finalSemanaErr);
+    }
   }
 
   async function salavaDados() {
@@ -215,38 +230,53 @@ export function SemanalDetalhe() {
     const id_status = selectCaixaStatus === 'VAZIA' ? 1 : 2;
     const id_local = selecLocalCarga === 'FABRICA' ? 1 : (selecLocalCarga === 'CAMINHÃO' ? 2 : 3);
 
+    console.log('selectCaixaStatus', selectCaixaStatus);
+
     const data = new Date()
     const hora = data.getHours();
     const minutos = data.getMinutes();
-    const horaMinuto = `${hora}`.padStart(2, '0') + ':' + `${minutos}`.padStart(2, '0')
-    const id_historico = `${dadosSemanal.id}.` + `${idCaixa}`.padStart(2, '0')
+    const segundos = data.getSeconds();
+    const horaMinuto = `${hora}`.padStart(2, '0') + ':' + `${minutos}`.padStart(2, '0') + ':' + `${segundos}`.padStart(2, '0')
+    const id_historico = `${dadosSemanal.id_semana}.` + `${idCaixa}`.padStart(2, '0')
 
     if (dadosSemanal.id_caixa != null) {
       //Isso garante que, caso o numero da caixa seja alterado, a caixa que estava vinculada seja "liberada"
-      firestore().collection('caixa').doc(`${dadosSemanal.id_caixa}`).update({
-        livre: true,
-      })
+      const { data: updateCaixa, error: livreErr } = await supabase.from('caixa').update({ livre: true }).eq('id_caixa', dadosSemanal.id_caixa)
+
+      if (livreErr) {
+        console.log('caixaLivre', livreErr);
+        return
+      }
     }
 
     //Faz o update da collection caixa, 
-    firestore().collection('caixa').doc(`${idCaixa}`).update({
+    const { data: updateCaixa, error: upCaixaErr } = await supabase.from('caixa').update({
       id_status: id_status,
       id_local: id_local,
       livre: false
-    })
+    }).eq('id_caixa', idCaixa);
 
-    //faz o update da collection semana
-    firestore().collection('semana').doc(`${dadosSemanal.id}`).update({
+    if (upCaixaErr) {
+      console.log('upCaixaErr', upCaixaErr);
+      return
+    }
+
+    const { data: UpSemana, error: semanaErr } = await supabase.from('semana').update({
       status: selectCaixaStatus,
       id_caixa: idCaixa,
-      id_semana: id_historico,
+      id: id_historico,
       ativo: 'Iniciado'
-    })
+    }).eq('id_semana', dadosSemanal.id_semana);
+
+    if (semanaErr) {
+      console.log('semanaErr', semanaErr);
+      return
+    }
 
     if (atualLocalCarga != id_local || atualCaixaStatus != id_status) {
 
       //adiciona ao histórico
-      firestore().collection('historicoStatus').add({
+      const { data: inHistorico, error: historicoErr } = await supabase.from('historicoStatus').insert({
         id_HistóricoSemana: id_historico,
         id_caixa: idCaixa,
         status: selectCaixaStatus,
@@ -254,17 +284,23 @@ export function SemanalDetalhe() {
         data: dayjs().locale('pt-br').format('DD/MM/YYYY'),
         hora: horaMinuto
       })
-    }
-    console.log(id_status, id_local);
-    if (id_status === 2 && id_local === 3) {
-      const caixa = firestore().collection('caixa').doc(`${id_status}`)
 
-      const doc = await caixa.get();
-      if (doc.exists) {
-
-        EnviaNotify(dadosSemanal);
+      if (historicoErr) {
+        console.log('historicoErr', historicoErr);
       }
+    }
 
+    if (id_status === 2 && id_local === 3) {
+
+      //const { data: TemCaixa, error: TemCaixaErr} = await supabase.from('caixa').select('*').
+
+    // const caixa = firestore().collection('caixa').doc(`${id_status}`)
+
+     // const doc = await caixa.get();
+
+      //if (doc.exists) {
+        EnviaNotify(dadosSemanal);
+     // }
     }
 
     if (!desativarFinal) {
@@ -276,35 +312,30 @@ export function SemanalDetalhe() {
 
   async function pegaDadosUmaCaixa() {
 
-    const caixa = firestore().collection('caixa').doc(`${dadosSemanal.id_caixa}`);
-    const doc = await caixa.get();
-    if (!doc.exists) {
-      console.log('Documento não encontrado!');
-    } else {
+    let { data: caixa, error } = await supabase.from('caixa').select('id_local, id_status, Latitude, Longitude').eq('id_caixa', dadosSemanal.id_caixa)
 
-      const { id_local, id_status, Latitude, Longitude } = doc.data() as CaixaProps;
+    if (caixa && caixa.length > 0) {
 
-      const staatus = id_status === 1 ? 'VAZIA' : 'CHEIA';
-      const local = id_local === 1 ? 'FABRICA' : (id_local === 2 ? 'CAMINHÃO' : 'FORNECEDOR')
+      const staatus = caixa[0].id_status === 1 ? 'VAZIA' : 'CHEIA';
+      const local = caixa[0].id_local === 1 ? 'FABRICA' : (caixa[0].id_local === 2 ? 'CAMINHÃO' : 'FORNECEDOR')
 
-      if (Latitude) {
-        setLatitude(Latitude);
+      if (caixa[0].Latitude) {
+        setLatitude(caixa[0].Latitude);
       }
 
-      if (Longitude) {
-        setLongitude(Longitude);
+      if (caixa[0].Longitude) {
+        setLongitude(caixa[0].Longitude);
       }
 
       setSelecLocalCarga(local);
-      setAtualLocalCarga(id_local);
+      setAtualLocalCarga(caixa[0].id_local);
       setSelectCaixaStatus(staatus);
-      setAtualCaixaStatus(id_status);
-
+      setAtualCaixaStatus(caixa[0].id_status);
     }
   }
 
-  function handleHistorico({ id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status }: SemanaProps) {
-    navigation.navigate('historicoStatus', { id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status });
+  function handleHistorico({ id_semana, ativo, data_, id, id_caixa, id_fornecedor, inserido_em, status }: SemanaProps) {
+    navigation.navigate('historicoStatus', { id_semana, ativo, data_, id, id_caixa, id_fornecedor, inserido_em, status });
   }
 
   useEffect(() => {
@@ -412,30 +443,14 @@ export function SemanalDetalhe() {
                   style={[{ marginBottom: 20 }, styles.buttonPdf, dadosSemanal.ativo === 'Finalizado' ? { marginTop: 20 } : null]}
                   onPress={() => print(dadosSemanal)}
                   leftIcon={<AntDesign name="pdffile1" size={30} color="black" />}
-                //   isDisabled={DesativarRecibo}
                 />
 
               </View>
             </View>
-
           </ScrollView>
         </SafeAreaView>
       </Background>
     </NativeBaseProvider>
   );
 }
-
-/*
-              <Button
-                title="teste"
-                style={[{ marginBottom: 20 }, styles.buttonPdf]}
-                onPress={EnviaNotify}
-              />  
-
-<Button
-                title="Finalizar"
-                style={[{ marginBottom: 20 }, styles.buttonFinalizar]}
-                isDisabled={desativarFinal}
-                onPress={Finalizar}
-              />*/
 

@@ -11,6 +11,7 @@ import { Background } from "../../componentes/Backgound";
 import { FornecedorProps, Historico, SemanaProps } from "../../componentes/SemanalCard";
 import { TEMA } from "../../tema/tema";
 import firestore, { firebase } from '@react-native-firebase/firestore'
+import { supabase } from "../../componentes/Supabase/database";
 
 export function HistoricoStatus() {
 
@@ -18,51 +19,35 @@ export function HistoricoStatus() {
   const route = useRoute();
   const hist = route.params as SemanaProps;
   const [historico, setHistorico] = useState<Historico[]>([]);
-  const [fornecedor, setFornecedor] = useState<FornecedorProps>();
+  const [fornecedor, setFornecedor] = useState<FornecedorProps[]>([]);
 
   const handleGoBack = () => {
     navigation.goBack();
   };
 
   async function buscaFornecedor() {
-    const forn = firestore().collection('fornecedor').doc(`${hist.id_fornecedor}`);
-    const doc = await forn.get();
-    if (!doc.exists) {
-      console.log('Documento não encontrado!');
-    } else {
-      setFornecedor(doc.data() as FornecedorProps);
+
+    let { data: fornecHis, error: fornecHisErr } = await supabase.from('fornecedor').select('*').eq('id_fornecedor', hist.id_fornecedor)
+
+    if (fornecHisErr) {
+      console.log(fornecHisErr);
+    } else{
+      setFornecedor(fornecHis as FornecedorProps[])
     }
+
   }
 
   async function buscaHistorico() {
-    const subscribe = await firestore()
-      .collection('historicoStatus')
-      .where('id_HistóricoSemana', '==', hist.id_semana)
-      .onSnapshot(querySnapshot => {
-        const data = querySnapshot.docs.map(doc => {
-          return {
-            id: doc.id,
-            ...doc.data()
-          }
-        }) as Historico[];
 
-        data.sort((a, b) => {
-          if (a.hora > b.hora) {
-            return -1;
-          }
-          if (a.hora > b.hora) {
-            return 1;
-          }
-          return 0;
-        });
+    let { data: histo, error: histoErr } = await supabase.from('historicoStatus').select('*').eq('id_HistóricoSemana', hist.id).order('hora', { ascending: false });
 
-        setHistorico(data);
-      });
+    if (histoErr) {
+      console.log('histoErr',histoErr);
+      return
+    }
 
-    return () => subscribe();
+    setHistorico(histo as Historico[]);
   }
-
-
 
   useEffect(() => {
     buscaHistorico();
@@ -74,12 +59,12 @@ export function HistoricoStatus() {
       <Background>
         <SafeAreaView style={[{ marginTop: '10%' }]}>
 
-          <View style={[{ backgroundColor: '#7fdec7' }, {alignItems: 'center'}]} >
-            <Text style={[{fontSize: 18}]}>HISTÓRICO</Text>
+          <View style={[{ backgroundColor: '#7fdec7' }, { alignItems: 'center' }]} >
+            <Text style={[{ fontSize: 18 }]}>HISTÓRICO</Text>
           </View>
 
           <View style={[{ justifyContent: 'center' }, { alignItems: 'center' }, { marginBottom: 40 }]}>
-            <Text style={[{ fontSize: 20 }, {marginTop: 15}]} > Fornecedor {`${hist.id_fornecedor}`.padStart(2, '0')} : {fornecedor?.nome}</Text>
+            <Text style={[{ fontSize: 20 }, { marginTop: 15 }]} > Fornecedor {`${hist.id_fornecedor}`.padStart(2, '0')} : {fornecedor[0]?.nome}</Text>
           </View>
           <FlatList
             data={historico}

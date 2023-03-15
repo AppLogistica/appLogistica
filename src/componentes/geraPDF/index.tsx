@@ -4,7 +4,10 @@ import * as Print from 'expo-print';
 import { FornecedorProps, SemanaProps } from '../SemanalCard';
 import { shareAsync } from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
-import firestore from '@react-native-firebase/firestore';
+//import firestore from '@react-native-firebase/firestore';
+import { supabase } from '../Supabase/database';
+import dayjs from 'dayjs';
+import 'dayjs/locale/pt-br';
 
 
 async function generateHTML(NomeFornecedor: string, recibo: SemanaProps, hora: string) {
@@ -32,7 +35,7 @@ async function generateHTML(NomeFornecedor: string, recibo: SemanaProps, hora: s
           <h3>Fornecedor: ${recibo.id_fornecedor} : ${NomeFornecedor}</h3>
           <h3>Caixa Nº ${ JSON.stringify(recibo.id_caixa).padStart(2,'0')} </h3>
           <div style="display: flex; justify-content: space-between"> 
-            <h4 style=" margin: 0; padding: 5px;">Recibo gerado no dia ${recibo.data} as ${hora}</h4>
+            <h4 style=" margin: 0; padding: 5px;">Recibo gerado no dia ${dayjs().format('DD/MM/YYYY')} as ${hora}</h4>
             <h4 style="text-align: right; margin: 0; padding: 5px;"> Assinatura:    _____________________________ </h4>
           </div>
          
@@ -51,22 +54,19 @@ export async function print(recibo: SemanaProps) {
   const minutos = data.getMinutes();
   const horaMinuto = `${hora}`.padStart(2, '0') + ':' + `${minutos}`.padStart(2, '0')
 
-  let NomeFornecedor = '';
+  let NomeFornecedor: FornecedorProps[];
 
-  const fornec = firestore().collection('fornecedor').doc(`${recibo.id_fornecedor}`);
-  const doc = await fornec.get();
-  if (!doc.exists) {
-    console.log('Documento não encontrado!');
-  } else {
+  let { data: fornec, error } = await supabase.from('fornecedor').select('*').eq('id_fornecedor', recibo.id_fornecedor);
 
-    const { nome } = doc.data() as FornecedorProps;
-    NomeFornecedor = nome;
-
+  if(error){
+    console.log(error);
+    return
   }
 
+  NomeFornecedor = fornec as FornecedorProps[];
+  let nomeFornec = NomeFornecedor[0].nome
 
-
-  const html = await generateHTML('NomeFornecedor !== undefined' ? NomeFornecedor : '', recibo, horaMinuto);
+  const html = await generateHTML('nomeFornec !== undefined' ? nomeFornec : '', recibo, horaMinuto);
 
   const { uri } = await Print.printToFileAsync({
     html,

@@ -3,26 +3,25 @@ import axios from 'axios'
 import { FornecedorProps, SemanaProps } from '../SemanalCard';
 import firestore from '@react-native-firebase/firestore';
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import { supabase } from '../Supabase/database';
 
 export async function EnviaNotify(dados: SemanaProps) {
 
-  let NomeFornecedor = '';
+  let NomeFornecedor: FornecedorProps[];
+  
+  let { data: dadosFornec, error: dadosErr} = await supabase.from('fornecedor').select('*').eq('id_fornecedor',dados.id_fornecedor)
 
-  const fornec = firestore().collection('fornecedor').doc(`${dados.id_fornecedor}`);
-  const doc = await fornec.get();
-  if (!doc.exists) {
-    console.log('Documento não encontrado!');
-  } else {
-
-    const { nome } = doc.data() as FornecedorProps;
-    NomeFornecedor = nome;
+  if(dadosErr){
+    console.log(dadosErr);
+    return
   }
+  
+  NomeFornecedor = dadosFornec as FornecedorProps[];
 
+  console.log('NomeFornecedor',NomeFornecedor);
+  
 
   // @ts-ignore
-
-
-
   const tokens = [];
   const meuToken = await messaging().getToken();
   
@@ -42,7 +41,7 @@ export async function EnviaNotify(dados: SemanaProps) {
     axios.post('https://fcm.googleapis.com/fcm/send', {
       "notification": {
         "title": `Caixa cheia `,
-        "body": `${NomeFornecedor}`,
+        "body": `${NomeFornecedor[0].nome}`,
         "android": {
           //"direct_boot_ok": true,
           "priority": "high",
