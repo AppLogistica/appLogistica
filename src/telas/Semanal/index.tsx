@@ -11,12 +11,20 @@ import firestore from '@react-native-firebase/firestore';
 
 import { styles } from "./styles";
 import { Background } from "../../componentes/Backgound";
-import { CaixaProps, SemanalCard, SemanaProps } from "../../componentes/SemanalCard";
+import { CaixaProps, EnderecoProps, FornecedorProps, LocalCaixaProps, SemanalCard, SemanaProps, StatusProps } from "../../componentes/SemanalCard";
 import { NotificacaoListener, PermissaoUsuario } from "../../componentes/Notificacao/notifica";
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import notifee, { AndroidImportance } from '@notifee/react-native';
 
 import { supabase } from "../../componentes/Supabase/database";
+import { Sincroniza } from "../../componentes/DatabaseSQLite/SincronizaDados";
+import endereco from "../../componentes/DatabaseSQLite/enderecoSql/endereco";
+import fornecedor from "../../componentes/DatabaseSQLite/fornecedorSql/fornecedor";
+import semana from "../../componentes/DatabaseSQLite/semanaSql/semana";
+import NetInfo from "@react-native-community/netinfo";
+import Status from "../../componentes/DatabaseSQLite/StatusSQl/Status";
+import local from "../../componentes/DatabaseSQLite/localSql/local";
+import caixa from "../../componentes/DatabaseSQLite/caixaSql/caixa";
 //import { Sincroniza } from "../../componentes/DatabaseSQLite/SincronizaDados";
 //import { carregaSQLite } from "../../componentes/DatabaseSQLite/CriaTabelas";
 
@@ -47,6 +55,7 @@ export function Semanal() {
   // const [dadosCaixa, setDadosCaixa] = useState<CaixaProps>();
   const [filtro, setFiltro] = useState('Todos');
   const [meuToken, setMeuToken] = useState('');
+  const [conectado, setConectado] = useState<boolean | null>(null);
   const navigation = useNavigation();
 
   function handleDetalhes({ id_semana, data_, id_fornecedor, id_caixa, inserido_em, id, status, ativo }: SemanaProps) {
@@ -63,9 +72,9 @@ export function Semanal() {
     setDate(date.subtract(1, 'day'));
   };
 
-  const dadosFiltrados = dadosSemana.filter(item => {
+  const dadosFiltrados = dadosSemana ? dadosSemana.filter(item => {
     return item.ativo === filtro
-  })
+  }) : null;
 
   // @ts-ignore
   const handleMessagingToken = async token => {
@@ -127,11 +136,17 @@ export function Semanal() {
 
     if (error) {
       console.log(error);
+      return
     }
 
-    setDadosSemana([]);
-
+    // setDadosSemana([]);
+    const resSemana = data as SemanaProps[];
     setDadosSemana(data as SemanaProps[]);
+
+    if (resSemana && resSemana.length > 0) {
+      SincronizaSemana(resSemana);
+    }
+
   }
 
   supabase.channel('custom-all-channel')
@@ -140,22 +155,167 @@ export function Semanal() {
       { event: '*', schema: 'public', table: 'semana' },
       (payload) => {
         console.log('Change received!', payload)
-        
+
         attSemana();
-        return(
+
+        return (
           renderListSemana()
         )
       }
     )
     .subscribe();
 
+  async function SincronizaEndereco() {
+
+    let { data: Endereco, error: EnderecoErr } = await supabase.from('endereco').select('*');
+
+    if (EnderecoErr) {
+      console.log(EnderecoErr);
+      return;
+    }
+
+    const resEndereco = Endereco as EnderecoProps[];
+
+    resEndereco.map(async item => {
+      if (await endereco.encontrar(item.id_endereco).catch(err => console.log('endereco', err))) {
+        endereco.update(item.id_endereco, item).catch(err => console.log('endereco', err)) //mandar par auma tabela de erro?
+      } else {
+        endereco.inserir(item).catch(err => console.log('endereco', err)) //mandar par auma tabela de erro?
+      }
+    });
+  }
+
+  async function SincronizaFornecedor() {
+
+    let { data: Fornecedor, error: FornecedorErr } = await supabase.from('fornecedor').select('*');
+
+    if (FornecedorErr) {
+      console.log(FornecedorErr);
+      return;
+    }
+
+    const resFornecedor = Fornecedor as FornecedorProps[];
+
+    resFornecedor.map(async item => {
+      if (await fornecedor.encontrar(item.id_fornecedor).catch(err => console.log('fornecedor', err))) {
+        fornecedor.update(item.id_fornecedor, item).catch(err => console.log('fornecedor', err)) //mandar par auma tabela de erro?
+      } else {
+        fornecedor.inserir(item).catch(err => console.log('fornecedor', err)) //mandar par auma tabela de erro?;
+      }
+    })
+  }
+
+  async function SincronizaSemana(resSemana: SemanaProps[]) {
+    // let { data: Semana, error: SemanaErr } = await supabase.from('semana').select('*')
+
+    resSemana.map(async item => {
+      if (await semana.encontrar(item.id_semana).catch(err => console.log('semana', err))) {
+
+        semana.update(item.id_semana, item).catch(err => console.log('semana', err)); //mandar par auma tabela de erro?
+      } else {
+
+        semana.inserir(item).catch(err => console.log('semana', err)); //mandar par auma tabela de erro?;
+      }
+    })
+    console.log((await semana.todos()).length);
+  }
+
+  async function SincronizaStatus() {
+    let { data: status, error: statusErr } = await supabase.from('status').select('*');
+
+    if (statusErr) {
+      console.log(statusErr);
+      return;
+    }
+
+    const resStatus = status as StatusProps[];
+
+    resStatus.map(async item => {
+
+      if (await Status.encontrar(item.id_status).catch(err => console.log('status', err))) {
+        Status.update(item.id_status, item).catch(err => console.log('status', err))
+      } else {
+        console.log('insert', item.id_status);
+        Status.insert(item).catch(err => console.log('status', err));
+      }
+    })
+  }
+
+  async function SincronizaLocal() {
+    let { data: localsup, error: localsupErr } = await supabase.from('local').select('*');
+
+    if (localsupErr) {
+      console.log(localsupErr);
+      return;
+    }
+
+    const resLocal = localsup as LocalCaixaProps[];
+
+    resLocal.map(async item => {
+      if (await local.encontrar(item.id_local).catch(err => console.log('local', err))) {
+        local.update(item.id_local, item).catch(err => console.log('local', err))
+      } else {
+        local.inserir(item).catch(err => console.log('local', err));
+      }
+    })
+  }
+
+  async function SincronizaCaixas() {
+    let { data: caixas, error: caixasErr } = await supabase.from('caixa').select('*');
+
+    if (caixasErr) {
+      console.log(caixasErr);
+      return;
+    }
+
+    const resCaixas = caixas as CaixaProps[];
+
+    resCaixas.map(async item => {
+      if (await caixa.encontrar(item.id_caixa).catch(err => console.log(err))) {
+        caixa.update(item.id_caixa, item).catch(err => console.log(err))
+      } else {
+        caixa.inserir(item).catch(err => console.log(err))
+      }
+    })
+  }
+
+  async function SincrnizaInit() {
+    const { isConnected } = await NetInfo.fetch();
+
+    if (isConnected) {
+
+      SincronizaEndereco();
+      SincronizaFornecedor();
+      SincronizaStatus();
+      SincronizaLocal();
+      SincronizaCaixas();
+
+      attSemana();
+    } else {
+
+      semana.pegaByData(date.format('YYYY-MM-DD'))
+        .then(item => {
+
+          setDadosSemana(item);
+
+        })
+        .catch(err => {
+          console.log('pegaByData', err);
+        })
+    }
+  }
 
   useEffect(() => {
 
     handleInitialNotification();
 
-
-    attSemana();
+    SincrnizaInit();
+    //semana.dropa();
+    // endereco.dropa();
+    //fornecedor.dropa();
+    //local.dropa();
+    //Status.dropa();
+    //caixa.dropa();
 
     messaging().registerDeviceForRemoteMessages
 
@@ -171,6 +331,7 @@ export function Semanal() {
     }
 
   }, [date]);
+
 
   const diaDaSemana = date.format('dddd');
 

@@ -1,5 +1,5 @@
 import { FornecedorProps } from "../../SemanalCard";
-import db from "../Database";
+import db from "../database";
 
 /**
  * INICIALIZAÇÃO DA TABELA
@@ -11,7 +11,7 @@ db.transaction((tx) => {
     //<<<<<<<<<<<<<<<<<<<<<<<< USE ISSO APENAS DURANTE OS TESTES!!! >>>>>>>>>>>>>>>>>>>>>>>
   
     tx.executeSql(
-      'create table if not exists Fornecedor' +
+      'create table if not exists fornecedor' +
       '(id_fornecedor integer primary key,' +
       'nome text not null,' +
       'CNPJ text not null,' +
@@ -47,7 +47,7 @@ db.transaction((tx) => {
       db.transaction((tx) => {
         //comando SQL modificável
         tx.executeSql(
-          "UPDATE fornecedor SET nome=?, cnpj=?, id_endereco=?, email=? WHERE id=?;",
+          "UPDATE fornecedor SET nome=?, cnpj=?, id_endereco=?, email=? WHERE id_fornecedor=?;",
           [ obj.nome, obj.cnpj, obj.id_endereco, obj.email, id],
           //-----------------------
           (_, { rowsAffected }) => {
@@ -68,7 +68,7 @@ db.transaction((tx) => {
       db.transaction((tx) => {
         //comando SQL modificável
         tx.executeSql(
-          "SELECT * FROM fornecedor WHERE id=?;",
+          "SELECT * FROM fornecedor WHERE id_fornecedor=?;",
           [id],
           //-----------------------
           (_, { rows }) => {
@@ -143,13 +143,33 @@ db.transaction((tx) => {
       });
     });
   };
-  
 
+  const dropa = () => {
+    return new Promise((resolve, reject) => {
+      db.transaction((tx) => {
+        //comando SQL modificável
+        tx.executeSql(
+          "DROP TABLE fornecedor;",
+          [],
+          //-----------------------
+          (_, { rowsAffected }) => {
+            resolve(rowsAffected);
+          },
+          (_, error) => {
+            reject(error) // erro interno em tx.executeSql
+            return false;
+          }
+        );
+      });
+    });
+  };
+  
   export default {
     inserir,
     update,
     encontrar,
     findByFornecedor,
     todos,
-    remove
+    remove,
+    dropa
   }
