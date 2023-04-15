@@ -1,30 +1,29 @@
 import { SemanaProps } from "../../SemanalCard";
-import db from "../database";
+import db from "../Database";
 
 
 db.transaction((tx) => {
+
   tx.executeSql(
-    'create table if not exists semana' +
-    '(id_semana text primary key,' +
-    'id text not null,' +
-    'status text,' +
+    'create table if not exists Semana' +
+    '(id_semana integer primary key,' +
     'id_fornecedor integer not null,' +
     'id_caixa integer null,' +
-    'data_ date not null,' +
+    'data date not null,' +
     'inserido_em date not null,' +
-    'ativo text not null,' +
-    'FOREIGN KEY (id_fornecedor) REFERENCES Fornecedor (id_fornecedor));'
+    'alterado_em date,' +
+    'FOREIGN KEY (id_fornecedor) REFERENCES Fornecedor (id_fornecedor),' +
+    'FOREIGN KEY (id_caixa) REFERENCES Caixa (id_caixa));'
   );
 });
 
 const inserir = (obj: SemanaProps) => {
   return new Promise((resolve, reject) => {
- 
     db.transaction((tx) => {
       //comando SQL modificável
       tx.executeSql(
-        'insert into semana (id_semana, id, status, id_fornecedor, id_caixa, data_, inserido_em, ativo) values (?, ?, ?, ?, ?, ?, ?, ?);',
-        [obj.id_semana, obj.id, obj.status, obj.id_fornecedor, obj.id_caixa, `${obj.data_}`, `${obj.inserido_em}`, obj.ativo],
+        'insert into semana (id_semana, id_fornecedor, id_caixa, data, inserido_em) values (?, ?, ?, ?, ?);',
+        [obj.id_semana, obj.id_fornecedor, obj.id_caixa, `${obj.data}`, `${obj.inserido_em}`],
         //-----------------------
         (_, { rowsAffected, insertId }) => {
           if (rowsAffected > 0) resolve(insertId);
@@ -38,19 +37,15 @@ const inserir = (obj: SemanaProps) => {
     });
   });
 };
-/*
-      status: selectCaixaStatus,
-      id_caixa: idCaixa,
-      id: id_historico,
-      ativo: 'Iniciado'
-*/
-const update = (id: number, status: string, id_caixa: number, id_historico: string, ativo: string) => {
+
+
+const update = (id: number, obj: SemanaProps) => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       //comando SQL modificável
       tx.executeSql(
-        "UPDATE semana SET id=?, status=?, id_caixa=?, ativo=? WHERE id_semana=?;",
-        [id_historico, status, id_caixa, ativo, id],
+        "UPDATE semana SET id_status, model=?, hp=? WHERE id=?;",
+        [obj.id_semana, obj.id_caixa, obj.id_fornecedor, `${obj.data}`, `${obj.inserido_em}`, id],
         //-----------------------
         (_, { rowsAffected }) => {
           if (rowsAffected > 0) resolve(rowsAffected);
@@ -70,7 +65,7 @@ const encontrar = (id: number): Promise<SemanaProps> => {
     db.transaction((tx) => {
       //comando SQL modificável
       tx.executeSql(
-        "SELECT * FROM semana WHERE id_semana=?;",
+        "SELECT * FROM semana WHERE id=?;",
         [id],
         //-----------------------
         (_, { rows }) => {
@@ -86,7 +81,7 @@ const encontrar = (id: number): Promise<SemanaProps> => {
   });
 };
 
-const findByCaixa = (id_caixa: number): Promise<SemanaProps[]> => {
+const findByCaixa = (id_caixa: number):Promise<SemanaProps[]> => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       //comando SQL modificável
@@ -107,8 +102,7 @@ const findByCaixa = (id_caixa: number): Promise<SemanaProps[]> => {
   });
 };
 
-const todos = (): Promise<SemanaProps[]> => {
-
+const todos = ():Promise<SemanaProps[]> => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       //comando SQL modificável
@@ -126,52 +120,13 @@ const todos = (): Promise<SemanaProps[]> => {
   });
 };
 
-const pegaByData = (data: string): Promise<SemanaProps[]> => {
-
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      //comando SQL modificável
-      tx.executeSql(
-        `SELECT * FROM semana WHERE data_ = ?;`,
-        [`${data}`],
-        //-----------------------
-        (_, { rows }) => resolve(rows._array),
-        (_, error) => {
-          reject(error) // erro interno em tx.executeSql
-          return false;
-        }
-      );
-    });
-  });
-};
-
 const remove = (id: number) => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       //comando SQL modificável
       tx.executeSql(
-        "DELETE FROM semana WHERE id_semana=?;",
+        "DELETE FROM semana WHERE id=?;",
         [id],
-        //-----------------------
-        (_, { rowsAffected }) => {
-          resolve(rowsAffected);
-        },
-        (_, error) => {
-          reject(error) // erro interno em tx.executeSql
-          return false;
-        }
-      );
-    });
-  });
-};
-
-const dropa = () => {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      //comando SQL modificável
-      tx.executeSql(
-        "DROP TABLE semana;",
-        [],
         //-----------------------
         (_, { rowsAffected }) => {
           resolve(rowsAffected);
@@ -191,7 +146,5 @@ export default {
   encontrar,
   findByCaixa,
   todos,
-  remove,
-  pegaByData,
-  dropa
+  remove
 }

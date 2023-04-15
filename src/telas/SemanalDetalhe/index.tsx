@@ -12,21 +12,12 @@ import { CaixaProps, LocalCaixaProps, SemanalCard, SemanaProps } from "../../com
 import { styles } from "./styles";
 import firestore, { firebase } from '@react-native-firebase/firestore'
 import { SelectList } from 'react-native-dropdown-select-list'
-import dayjs from 'dayjs';
-import 'dayjs/locale/pt-br';
+import dayjs from "dayjs";
 import { print } from "../../componentes/geraPDF";
-//import notifee, { AndroidImportance } from '@notifee/react-native';
-//import { sendFCMMessage } from "../../componentes/Notificacao/Envio";
 import { AntDesign } from '@expo/vector-icons';
 
-//import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
-//import { Rotas } from "../../rotas";
 import { LocationObject } from "expo-location";
-//import { EnviaNotify } from "../../componentes/fireNotify/envia";
-import { supabase } from "../../componentes/Supabase/database";
 import { EnviaNotify } from "../../componentes/fireNotify/envia";
-import caixa from "../../componentes/DatabaseSQLite/caixaSql/caixa";
-import semana from "../../componentes/DatabaseSQLite/semanaSql/semana";
 
 
 type selectProps = {
@@ -44,6 +35,7 @@ export function SemanalDetalhe() {
   const [location, setLocation] = useState<LocationObject | null>();
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
+
 
   const dadosLocal: LocalCaixaProps[] = [];
   const [errorMsg, setErrorMsg] = useState({});
@@ -96,24 +88,10 @@ export function SemanalDetalhe() {
       setLatitude(location.coords.latitude);
       setLongitude(location.coords.longitude);
 
-      const { data: upLocalCaixa, error: localCaixaErr } = await supabase.from('caixa').update({
+      firestore().collection('caixa').doc(`${dadosSemanal.id_caixa}`).update({
         Latitude: location.coords.latitude,
         Longitude: location.coords.longitude,
-      }).eq('id_caixa', dadosSemanal.id_caixa)
-
-      if (localCaixaErr) {
-
-        const { message } = localCaixaErr;
-
-        if (message === "FetchError: Network request failed") {
-          caixa.updateLocalizacao(dadosSemanal.id_caixa, location);
-          console.log(caixa.encontrar(dadosSemanal.id_caixa));
-
-        } else {
-          console.log('localCaixaErr', localCaixaErr);
-          return
-        }
-      }
+      })
     }
     else {
       Alert.alert('Primeiro vincule uma caixa!')
@@ -123,43 +101,24 @@ export function SemanalDetalhe() {
   }
 
   async function pegaDadosCaixas() {
-
-    let { data: Dadoscaixa, error }
-      = await supabase.from('caixa')
-        .select('*')
-        .eq('livre', true)
-        .order('id_caixa');
-
     const tamanho = numCaixa.length
 
     for (let i = 0; i < tamanho; i++) {
+
       numCaixa.pop();
     }
 
-    if (error) {
-
-      const { message } = error;
-
-      if (message === "FetchError: Network request failed") {
-        caixa.livre(true).then(item => {
-          console.log('item', item);
-
-          item?.forEach(doc => {
-            numCaixa.push({ key: doc.id_caixa, value: doc.nome });
-          })
-
-        }).catch(err => console.log(err))
-      } else {
-        console.log('data: Dadoscaixa', error);
-        return
-      }
+    const caixas = firestore().collection('caixa');
+    const snapshot = await caixas.where('livre', '==', true).get();
+    if (snapshot.empty) {
+      console.log('Documento não encontrado!');
+      return;
     }
 
-    if (Dadoscaixa && Dadoscaixa.length > 0) {
-      Dadoscaixa?.forEach(doc => {
-        numCaixa.push({ key: doc.id_caixa, value: doc.nome });
-      })
-    }
+    snapshot.forEach(doc => {
+      numCaixa.push({ key: doc.id, value: doc.id.padStart(2, '0') });
+    });
+
   }
 
   function confirmaAlteraçãoCaixa(idCaixa: number): Promise<boolean> {
@@ -176,6 +135,7 @@ export function SemanalDetalhe() {
       );
     });
   }
+
 
   function confirmaFinal(): Promise<boolean> {
     return new Promise((resolve) => {
@@ -195,24 +155,17 @@ export function SemanalDetalhe() {
 
   async function Finalizar() {
 
-    const { data: finalCaixa, error: finalCaixaErr } = await supabase.from('caixa').update({
+    firestore().collection('caixa').doc(`${dadosSemanal.id_caixa}`).update({
       Latitude: null,
       Longitude: null,
       livre: true
-    }).eq('id_caixa', dadosSemanal.id_caixa);
 
-    if (finalCaixaErr) {
-      console.log('finalCaixaErr', finalCaixaErr);
-    }
+    })
 
-    const { data: finalSemana, error: finalSemanaErr } = await supabase.from('semana').update({
-      status: null,
+    firestore().collection('semana').doc(dadosSemanal.id).update({
+      status: '',
       ativo: 'Finalizado'
-    }).eq('id_semana', dadosSemanal.id_semana)
-
-    if (finalSemanaErr) {
-      console.log('finalSemanaErr', finalSemanaErr);
-    }
+    })
   }
 
   async function salavaDados() {
@@ -260,69 +213,36 @@ export function SemanalDetalhe() {
     const data = new Date()
     const hora = data.getHours();
     const minutos = data.getMinutes();
-    const segundos = data.getSeconds();
-    const horaMinuto = `${hora}`.padStart(2, '0') + ':' + `${minutos}`.padStart(2, '0') + ':' + `${segundos}`.padStart(2, '0')
-    const id_historico = `${dadosSemanal.id_semana}.` + `${idCaixa}`.padStart(2, '0')
+    const sec  = data.getSeconds();
+    const horaMinuto = `${hora}`.padStart(2, '0') + ':' + `${minutos}`.padStart(2, '0') + ':' + `${sec}`.padStart(2,'0')
+    const id_historico = `${dadosSemanal.id}.` + `${idCaixa}`.padStart(2, '0')
 
     if (dadosSemanal.id_caixa != null) {
       //Isso garante que, caso o numero da caixa seja alterado, a caixa que estava vinculada seja "liberada"
-      const { data: updateCaixa, error: livreErr } = await supabase.from('caixa').update({ livre: true }).eq('id_caixa', dadosSemanal.id_caixa)
-
-      if (livreErr) {
-
-        const { message } = livreErr;
-
-        if (message === "FetchError: Network request failed") {
-          caixa.updateLivre(dadosSemanal.id_caixa).catch(err => console.log(err))
-        } else {
-          console.log('caixaLivre', livreErr);
-          return
-        }
-      }
+      firestore().collection('caixa').doc(`${dadosSemanal.id_caixa}`).update({
+        livre: true,
+      })
     }
 
     //Faz o update da collection caixa, 
-    const { data: updateCaixa, error: upCaixaErr } = await supabase.from('caixa').update({
+    firestore().collection('caixa').doc(`${idCaixa}`).update({
       id_status: id_status,
       id_local: id_local,
       livre: false
-    }).eq('id_caixa', idCaixa);
+    })
 
-    if (upCaixaErr) {
-
-      const { message } = upCaixaErr;
-
-      if (message === "FetchError: Network request failed") {
-        caixa.update(idCaixa, id_status, id_local, false)
-      } else {
-        console.log('upCaixaErr', upCaixaErr);
-        return
-      }
-    }
-
-    const { data: UpSemana, error: semanaErr } = await supabase.from('semana').update({
+    //faz o update da collection semana
+    firestore().collection('semana').doc(`${dadosSemanal.id}`).update({
       status: selectCaixaStatus,
       id_caixa: idCaixa,
-      id: id_historico,
+      id_semana: id_historico,
       ativo: 'Iniciado'
-    }).eq('id_semana', dadosSemanal.id_semana);
-
-    if (semanaErr) {
-
-      const { message } = semanaErr;
-
-      if (message === "FetchError: Network request failed") {
-        semana.update(dadosSemanal.id_semana, selectCaixaStatus, idCaixa, id_historico, 'Iniciado').catch(err => console.log(err))
-      } else {
-        console.log('semanaErr', semanaErr);
-        return
-      }
-    }
+    })
 
     if (atualLocalCarga != id_local || atualCaixaStatus != id_status) {
 
       //adiciona ao histórico
-      const { data: inHistorico, error: historicoErr } = await supabase.from('historicoStatus').insert({
+      firestore().collection('historicoStatus').add({
         id_HistóricoSemana: id_historico,
         id_caixa: idCaixa,
         status: selectCaixaStatus,
@@ -330,25 +250,10 @@ export function SemanalDetalhe() {
         data: dayjs().locale('pt-br').format('DD/MM/YYYY'),
         hora: horaMinuto
       })
-
-      if (historicoErr) {
-
-        const { message } = historicoErr;
-        console.log('historicoErr', historicoErr);
-      }
     }
 
-    if (id_status === 2 && id_local === 3) {
-
-      //const { data: TemCaixa, error: TemCaixaErr} = await supabase.from('caixa').select('*').
-
-      // const caixa = firestore().collection('caixa').doc(`${id_status}`)
-
-      // const doc = await caixa.get();
-
-      //if (doc.exists) {
-      EnviaNotify(dadosSemanal);
-      // }
+    if (id_local === 3 && id_status === 2){
+      EnviaNotify(dadosSemanal)
     }
 
     if (!desativarFinal) {
@@ -360,55 +265,35 @@ export function SemanalDetalhe() {
 
   async function pegaDadosUmaCaixa() {
 
-    let { data: caixaSup, error } = await supabase.from('caixa').select('id_local, id_status, Latitude, Longitude').eq('id_caixa', dadosSemanal.id_caixa)
+    const caixa = firestore().collection('caixa').doc(`${dadosSemanal.id_caixa}`);
+    const doc = await caixa.get();
+    if (!doc.exists) {
+      console.log('Documento não encontrado!');
+    } else {
 
-    if (error) {
-      const { message } = error;
+      const { id_local, id_status, Latitude, Longitude } = doc.data() as CaixaProps;
 
-      if (message === "FetchError: Network request failed") {
-        caixa.encontrar(dadosSemanal.id_caixa)
-          .then(item => {
-            const staatus = item.id_status === 1 ? 'VAZIA' : 'CHEIA';
-            const local = item.id_local === 1 ? 'FABRICA' : (item.id_local === 2 ? 'CAMINHÃO' : 'FORNECEDOR')
+      const staatus = id_status === 1 ? 'VAZIA' : 'CHEIA';
+      const local = id_local === 1 ? 'FABRICA' : (id_local === 2 ? 'CAMINHÃO' : 'FORNECEDOR')
 
-            if (item.Latitude) {
-              setLatitude(item.Latitude);
-            }
-
-            if (item.Longitude) {
-              setLongitude(item.Longitude);
-            }
-
-            setSelecLocalCarga(local);
-            setAtualLocalCarga(item.id_local);
-            setSelectCaixaStatus(staatus);
-            setAtualCaixaStatus(item.id_status);
-          })
-      }
-    }
-
-    if (caixaSup && caixaSup.length > 0) {
-
-      const staatus = caixaSup[0].id_status === 1 ? 'VAZIA' : 'CHEIA';
-      const local = caixaSup[0].id_local === 1 ? 'FABRICA' : (caixaSup[0].id_local === 2 ? 'CAMINHÃO' : 'FORNECEDOR')
-
-      if (caixaSup[0].Latitude) {
-        setLatitude(caixaSup[0].Latitude);
+      if (Latitude) {
+        setLatitude(Latitude);
       }
 
-      if (caixaSup[0].Longitude) {
-        setLongitude(caixaSup[0].Longitude);
+      if (Longitude) {
+        setLongitude(Longitude);
       }
 
       setSelecLocalCarga(local);
-      setAtualLocalCarga(caixaSup[0].id_local);
+      setAtualLocalCarga(id_local);
       setSelectCaixaStatus(staatus);
-      setAtualCaixaStatus(caixaSup[0].id_status);
+      setAtualCaixaStatus(id_status);
+
     }
   }
 
-  function handleHistorico({ id_semana, ativo, data_, id, id_caixa, id_fornecedor, inserido_em, status }: SemanaProps) {
-    navigation.navigate('historicoStatus', { id_semana, ativo, data_, id, id_caixa, id_fornecedor, inserido_em, status });
+  function handleHistorico({ id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status }: SemanaProps) {
+    navigation.navigate('historicoStatus', { id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status });
   }
 
   useEffect(() => {
@@ -520,6 +405,7 @@ export function SemanalDetalhe() {
 
               </View>
             </View>
+
           </ScrollView>
         </SafeAreaView>
       </Background>

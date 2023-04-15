@@ -1,12 +1,15 @@
 import { EnderecoProps } from "../../SemanalCard";
-import db from "../database";
+import db from "../Database";
 
 db.transaction((tx) => {
+  //<<<<<<<<<<<<<<<<<<<<<<<< USE ISSO APENAS DURANTE OS TESTES!!! >>>>>>>>>>>>>>>>>>>>>>>
+  //tx.executeSql("DROP TABLE cars;");
+  //<<<<<<<<<<<<<<<<<<<<<<<< USE ISSO APENAS DURANTE OS TESTES!!! >>>>>>>>>>>>>>>>>>>>>>>
 
   tx.executeSql(
-    'create table if not exists endereco' +
+    'create table if not exists Endereco' +
     '(id_endereco integer primary key not null,' +
-    'cep text not null,' +
+    'CEP text not null,' +
     'estado text not null,' +
     'cidade text not null,' +
     'bairro text not null,' +
@@ -20,15 +23,15 @@ const inserir = (obj: EnderecoProps) => {
     db.transaction((tx) => {
       //comando SQL modificável
       tx.executeSql(
-        'insert into endereco (id_endereco, CEP, estado, cidade, bairro, logradouro) values (?, ?, ?, ?, ?, ?);',
-        [obj.id_endereco, obj.cep, obj.estado, obj.cidade, obj.bairro, obj.logradouro],
+        'insert into Endereco (id_endereco, CEP, estado, cidade, bairro, logradouro) values (?, ?, ?, ?, ?, ?);',
+        [obj.id, obj.cep, obj.estado, obj.cidade, obj.bairro, obj.logradouro],
         //-----------------------
         (_, { rowsAffected, insertId }) => {
           if (rowsAffected > 0) resolve(insertId);
           else reject("Error inserting obj: " + JSON.stringify(obj)); // insert falhou
         },
         (_, error) => {
-          reject( error) // erro interno em tx.executeSql
+          reject(error) // erro interno em tx.executeSql
           return false;
         }
       );
@@ -36,12 +39,13 @@ const inserir = (obj: EnderecoProps) => {
   });
 };
 
+
 const update = (id: number, obj: EnderecoProps) => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       //comando SQL modificável
       tx.executeSql(
-        "UPDATE endereco SET cep=?, estado=?, cidade=?, bairro=?, logradouro=?  WHERE id_endereco=?;",
+        "UPDATE endereco SET cep=?, estado=?, cidade=?, bairro=?, logradouro=?  WHERE id=?;",
         [obj.cep, obj.estado, obj.cidade, obj.bairro, obj.logradouro, id],
         //-----------------------
         (_, { rowsAffected }) => {
@@ -56,6 +60,7 @@ const update = (id: number, obj: EnderecoProps) => {
     });
   });
 };
+
 
 const encontrar = (id: number): Promise<EnderecoProps> => {
   return new Promise((resolve, reject) => {
@@ -137,26 +142,6 @@ const remove = (id: number) => {
   });
 };
 
-const dropa = () => {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      //comando SQL modificável
-      tx.executeSql(
-        "DROP TABLE endereco;",
-        [],
-        //-----------------------
-        (_, { rowsAffected }) => {
-          resolve(rowsAffected);
-        },
-        (_, error) => {
-          reject(error) // erro interno em tx.executeSql
-          return false;
-        }
-      );
-    });
-  });
-};
-
 
 export default {
   inserir,
@@ -164,6 +149,5 @@ export default {
   encontrar,
   findByCEP,
   todos,
-  remove,
-  dropa
+  remove
 }

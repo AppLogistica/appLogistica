@@ -10,12 +10,11 @@ db.transaction((tx) => {
 
 const insert = (obj: StatusProps) => {
   return new Promise((resolve, reject) => {
-    console.log('insert', obj.id_status);
     db.transaction((tx) => {
       //comando SQL modificável
       tx.executeSql(
-        'insert into status (id_status, nome) values (?, ?);',
-        [obj.id_status, obj.nome],
+        'insert into Status (id_status, nome) values (?, ?);',
+        [obj.id, obj.nome],
         //-----------------------
         (_, { rowsAffected, insertId }) => {
           if (rowsAffected > 0) resolve(insertId);
@@ -36,8 +35,8 @@ const update = (id: number, obj: StatusProps) => {
     db.transaction((tx) => {
       //comando SQL modificável
       tx.executeSql(
-        "UPDATE status SET nome=? WHERE id_status=?;",
-        [obj.nome ,id],
+        "UPDATE status SET nome=? WHERE status.id_status = ?;",
+        [id],
         //-----------------------
         (_, { rowsAffected }) => {
           if (rowsAffected > 0) resolve(rowsAffected);
@@ -53,15 +52,17 @@ const update = (id: number, obj: StatusProps) => {
   });
 };
 
-const encontrar = (id: number | null): Promise<StatusProps> => {
+const encontrar = (id: string | null): Promise<StatusProps> => {
 
   return new Promise((resolve, reject) => {
+
+    const query = `select status.* from semana INNER JOIN caixa ON semana.id_caixa = caixa.id_caixa INNER JOIN status ON status.id_status = caixa.id_status and semana.id_caixa = ${id}`;
 
     db.transaction((tx) => {
       //comando SQL modificável
       tx.executeSql(
-        'SELECT * FROM status WHERE id_status=?',
-        [id],
+        query,
+        [],
         //-----------------------
         (_, { rows }) => {
           if (rows.length > 0) { resolve(rows._array[0]); }
@@ -142,36 +143,11 @@ const remove = (id: number) => {
   });
 };
 
-const dropa = () => {
-  return new Promise((resolve, reject) => {
-
-    const query = `DROP TABLE statu`;
-
-    db.transaction((tx) => {
-      //comando SQL modificável
-      tx.executeSql(
-        query,
-        [],
-        //-----------------------
-        (_, { rows }) => {
-          if (rows.length > 0) { resolve(rows._array[0]); }
-          else reject("Objeto não encontrado: id="); // nenhum registro encontrado
-        },
-        (_, error) => {
-          reject(error);
-          return false;
-        } // erro interno em tx.executeSql
-      );
-    });
-  });
-};
-
 export default {
   encontrar,
   update,
   remove,
   insert,
   todos,
-  encontrabyNome,
-  dropa
+  encontrabyNome
 };
