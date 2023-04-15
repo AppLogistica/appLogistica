@@ -39,10 +39,9 @@ export interface StatusProps {
 export interface FornecedorProps {
   id: string;
   id_fornecedor: number,
-  cnpj: string;
-  email: string | null;
   id_endereco: number;
   nome: string;
+  cidade: string;
 }
 
 export interface LocalCaixaProps {
@@ -83,7 +82,7 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
   const [selectCaixaStatus, setSelectCaixaStatus] = useState('');
 
   const [dadosFornec, setDadosFornec] = useState('');
-  const [daodosEndereco, setDadosEndereco] = useState('');
+  const [cidade, setCidade] = useState('');
 
   async function abreMapa() {
 
@@ -142,20 +141,9 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
       console.log('Documento não encontrado!');
     } else {
 
-      const { id_endereco, nome } = doc.data() as FornecedorProps;
+      const { cidade, nome } = doc.data() as FornecedorProps;
       setDadosFornec(nome);
-
-      const endereco = firestore().collection('endereco').doc(`${id_endereco}`);
-      const docEndereco = await endereco.get();
-
-      if (!docEndereco.exists) {
-        console.log('Documento não encontrado!');
-      } else {
-
-        const { cep, bairro, cidade, estado, id, logradouro } = docEndereco.data() as EnderecoProps;
-
-        setDadosEndereco(cep)
-      }
+      setCidade(cidade);
     }
   }
 
@@ -166,10 +154,7 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
   useEffect(() => {
     pegaDadosUmaCaixa();
     pegaDadosFornecedor();
-    pegaDadosEndereco();
-    /*caixa.encontrar(`${SemanaDados.id_caixa}`)
-      .then(caixa => setDadosStatus(caixa))
-      .catch(err => console.log(err))*/
+    // pegaDadosEndereco();
 
   }, [SemanaDados])
 
@@ -179,7 +164,7 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
     <View style={styles.Principal}>
       <TouchableOpacity style={[styles.container, { marginTop: margem }]} {...rest}>
         <LinearGradient
-          colors={SemanaDados.ativo != 'Finalizado' ? TEMA.COLORS.FOOTER : ['green', 'green'] }
+          colors={SemanaDados.ativo != 'Finalizado' ? TEMA.COLORS.FOOTER : ['green', 'green']}
           style={[styles.footer]}>
 
           <View style={[styles.linha, { backgroundColor: cor }, { opacity: cor === '' ? 0 : 0.6 }]} />
@@ -187,24 +172,24 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
           <View style={[{ width: '90%' }, { marginLeft: 10 }, { marginTop: 10 }]}>
 
             <View style={[{ flexDirection: 'row' }, { justifyContent: 'space-between' }]}>
-              <Text style={[styles.Produtor, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]}>
+              <Text style={[styles.Produtor, SemanaDados.ativo === 'Finalizado' ? { color: 'white' } : null]}>
                 {`${SemanaDados.data}`}
               </Text>
-              <Text style={[styles.idSemana, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]} >
+              <Text style={[styles.idSemana, SemanaDados.ativo === 'Finalizado' ? { color: 'white' } : null]} >
                 {SemanaDados.id_semana}
               </Text>
             </View>
 
-            <Text style={[styles.Produtor, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]}>
-              Fornecedor: {dadosFornec}
+            <Text style={[styles.Produtor, SemanaDados.ativo === 'Finalizado' ? { color: 'white' } : null]}>
+              {`${SemanaDados.id_fornecedor}`.padStart(2,'0')} - {dadosFornec}
             </Text>
 
-            <Text style={[styles.Detalhes, { opacity: SemanaDados.status === '' ? 0 : 1 }, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]}>
+            <Text style={[styles.Detalhes, { opacity: SemanaDados.status === '' ? 0 : 1 }, SemanaDados.ativo === 'Finalizado' ? { color: 'white' } : null]}>
               Caixa {`${SemanaDados.id_caixa}`.padStart(2, '0')} : {selectCaixaStatus}
             </Text>
 
-            <Text style={[styles.Endereco, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]}>
-              CEP: {daodosEndereco}
+            <Text style={[styles.Endereco, SemanaDados.ativo === 'Finalizado' ? { color: 'white' } : null]}>
+              {`${cidade === undefined ? '' : cidade}`}
             </Text>
 
             <View

@@ -15,7 +15,6 @@ import { SelectList } from 'react-native-dropdown-select-list'
 import dayjs from "dayjs";
 import { print } from "../../componentes/geraPDF";
 import notifee, { AndroidImportance } from '@notifee/react-native';
-import { sendFCMMessage } from "../../componentes/Notificacao/Envio";
 import { AntDesign } from '@expo/vector-icons';
 
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
@@ -29,26 +28,6 @@ type selectProps = {
 };
 
 export function SemanalDetalhe() {
-  /*
-    async function mostra() {
-      await notifee.requestPermission();
-  
-      const channelId = await notifee.createChannel({
-        id: 'NoficicaStatus',
-        name: 'Status',
-        vibration: true,
-        importance: AndroidImportance.HIGH
-      });
-  
-      await notifee.displayNotification({
-        id: 'ola',
-        title: 'teste 1',
-        body: 'passamo pohaaa',
-        android: {
-          channelId
-        }
-      })
-    }*/
 
   const route = useRoute();
   const navigation = useNavigation();
@@ -160,7 +139,6 @@ export function SemanalDetalhe() {
     });
   }
 
-
   function confirmaFinal(): Promise<boolean> {
     return new Promise((resolve) => {
       Alert.alert(
@@ -237,7 +215,8 @@ export function SemanalDetalhe() {
     const data = new Date()
     const hora = data.getHours();
     const minutos = data.getMinutes();
-    const horaMinuto = `${hora}`.padStart(2, '0') + ':' + `${minutos}`.padStart(2, '0')
+    const sec = data.getSeconds();
+    const horaMinuto = `${hora}`.padStart(2, '0') + ':' + `${minutos}`.padStart(2, '0') + ':' + + `${sec}`.padStart(2,'0');
     const id_historico = `${dadosSemanal.id}.` + `${idCaixa}`.padStart(2, '0')
 
     if (dadosSemanal.id_caixa != null) {
@@ -433,17 +412,4 @@ export function SemanalDetalhe() {
   );
 }
 
-/*
-              <Button
-                title="teste"
-                style={[{ marginBottom: 20 }, styles.buttonPdf]}
-                onPress={() => print(dadosSemanal)}
-              />       
-
-<Button
-                title="Finalizar"
-                style={[{ marginBottom: 20 }, styles.buttonFinalizar]}
-                isDisabled={desativarFinal}
-                onPress={Finalizar}
-              />*/
 

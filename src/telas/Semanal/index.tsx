@@ -179,7 +179,7 @@ export function Semanal() {
     handleInitialNotification();
     pegaDadosSemana();
     messaging().registerDeviceForRemoteMessages
-    console.log('registrado?', messaging().isDeviceRegisteredForRemoteMessages);
+    //console.log('registrado?', messaging().isDeviceRegisteredForRemoteMessages);
 
     messaging().getToken().then(handleMessagingToken);
     const removeTokenRefresh = messaging().onTokenRefresh(handleMessagingToken);
