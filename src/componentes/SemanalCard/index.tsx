@@ -179,7 +179,7 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
             </View>
 
             <Text style={[styles.Produtor, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]}>
-              {SemanaDados.id_fornecedor} : {dadosFornec}
+              {`${SemanaDados.id_fornecedor}`.padStart(2,'0')} : {dadosFornec}
             </Text>
 
             <Text style={[styles.Detalhes, { opacity: SemanaDados.status === '' ? 0 : 1 }, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]}>
