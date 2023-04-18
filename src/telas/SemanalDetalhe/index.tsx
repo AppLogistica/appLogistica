@@ -14,7 +14,7 @@ import firestore, { firebase } from '@react-native-firebase/firestore'
 import { SelectList } from 'react-native-dropdown-select-list'
 import dayjs from "dayjs";
 import { print } from "../../componentes/geraPDF";
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, Feather, FontAwesome } from '@expo/vector-icons';
 
 import { LocationObject } from "expo-location";
 import { EnviaNotify } from "../../componentes/fireNotify/envia";
@@ -50,7 +50,8 @@ export function SemanalDetalhe() {
   const [selectCaixaStatus, setSelectCaixaStatus] = useState('');
   const CaixaStatus: selectProps[] =
     [{ key: '1', value: 'VAZIA' },
-    { key: '2', value: 'CHEIA' }]
+    { key: '2', value: 'CHEIA' },
+    { key: '3', value: 'DESCARREGADO' }]
 
   const [selectNumeCaixa, setSelectNumeCaixa] = useState('');
   const [numCaixa, setNumCaixa] = useState<selectProps[]>([]);
@@ -156,12 +157,14 @@ export function SemanalDetalhe() {
 
   async function Finalizar() {
 
-    firestore().collection('caixa').doc(`${dadosSemanal.id_caixa}`).update({
-      Latitude: null,
-      Longitude: null,
-      livre: true
+    /* firestore().collection('caixa').doc(`${dadosSemanal.id_caixa}`).update({
+       Latitude: null,
+       Longitude: null,
+       livre: true
+ 
+     })*/
 
-    })
+    liberaCaixa();
 
     firestore().collection('semana').doc(dadosSemanal.id).update({
       status: '',
@@ -208,7 +211,7 @@ export function SemanalDetalhe() {
       return Alert.alert('Escolha o status!');
     }
 
-    const id_status = selectCaixaStatus === 'VAZIA' ? 1 : 2;
+    const id_status = selectCaixaStatus === 'VAZIA' ? 1 : (selectCaixaStatus === 'CHEIA' ? 2 : 3);
     const id_local = selecLocalCarga === 'FABRICA' ? 1 : (selecLocalCarga === 'CAMINHÃO' ? 2 : 3);
 
     const data = new Date()
@@ -274,7 +277,7 @@ export function SemanalDetalhe() {
 
       const { id_local, id_status, Latitude, Longitude } = doc.data() as CaixaProps;
 
-      const staatus = id_status === 1 ? 'VAZIA' : 'CHEIA';
+      const staatus = id_status === 1 ? 'VAZIA' : (id_status === 2 ? 'CHEIA' : 'DESCARREGADO');
       const local = id_local === 1 ? 'FABRICA' : (id_local === 2 ? 'CAMINHÃO' : 'FORNECEDOR')
 
       if (Latitude) {
@@ -305,13 +308,68 @@ export function SemanalDetalhe() {
     })
   }
 
+  function confirmaReinicio(): Promise<boolean> {
+    return new Promise((resolve) => {
+      Alert.alert(
+        "Confirmação de Reinicio!", "Deseja realmente reiniciar essa tarefa?",
+        [{
+          text: 'Cancelar',
+          onPress: () => resolve(false),
+          style: 'cancel',
+        },
+        { text: 'OK', onPress: () => resolve(true) },],
+        { cancelable: false }
+      );
+    });
+  }
+
+  async function reiniciaProcesso() {
+    if (!await confirmaReinicio()) {
+
+      return
+    } else {
+
+      const his = firestore().collection('historicoStatus');
+      const snapshot = await his.where('id_HistóricoSemana', '==', dadosSemanal.id_semana).get();
+      if (snapshot.empty) {
+        console.log('Documento não encontrado!');
+        return;
+      }
+      // return
+      snapshot.forEach(doc => {
+        console.log(doc.id, doc.data());
+        firestore().collection('historicoStatus').doc(`${doc.id}`).delete()
+      });
+
+      liberaCaixa();
+      console.log(dadosSemanal.id);
+
+      firestore().collection('semana').doc(dadosSemanal.id).update({
+        status: '',
+        ativo: 'Inativos',
+        id_caixa: null,
+        id_semana: dadosSemanal.id
+      })
+
+      navigation.goBack();
+    }
+  }
+
   useEffect(() => {
     pegaDadosCaixas();
     pegaDadosUmaCaixa();
 
-    console.log(dadosSemanal.QtdCaixa, 'teste');
-
   }, []);
+
+  async function liberaCaixa() {
+    firestore().collection('caixa').doc(`${dadosSemanal.id_caixa}`).update({
+      Latitude: null,
+      Longitude: null,
+      livre: true,
+      id_local: 1,
+      id_status: 1
+    })
+  }
 
   return (
     <NativeBaseProvider>
@@ -405,7 +463,7 @@ export function SemanalDetalhe() {
                 </View> : null}
 
 
-              <View style={[{ flexDirection: 'row' }, { justifyContent: 'space-between' }]} >
+              <View style={[{ flexDirection: 'column' }, { justifyContent: 'space-between' }]} >
 
                 <Button
                   title="Gerar Recibo"
@@ -414,6 +472,16 @@ export function SemanalDetalhe() {
                   leftIcon={<AntDesign name="pdffile1" size={30} color="black" />}
                 />
 
+                <View style={[{}]}>
+
+                  <Button
+                    title="Reiniciar"
+                    style={[{ marginBottom: 20 }, styles.buttonPdf]}
+                    leftIcon={<Feather name="alert-triangle" size={24} color="red" />}
+                    onPress={reiniciaProcesso}
+                  />
+
+                </View>
               </View>
             </View>
 
@@ -424,3 +492,9 @@ export function SemanalDetalhe() {
   );
 }
 
+/*                  <Button
+                    title="Cancelar"
+                    style={[{ marginBottom: 20 }, styles.buttonPdf]}
+                    
+                    leftIcon={<FontAwesome name="hand-stop-o" size={24} color="red" />}
+                  />*/

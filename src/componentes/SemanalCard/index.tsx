@@ -127,7 +127,7 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
 
       console.log(id_local);
 
-      const status = id_status === 1 ? 'VAZIA' : 'CHEIA';
+      const status = id_status === 1 ? 'VAZIA' : ( id_status === 2 ? 'CHEIA' : 'DESCARREGADO');
       const local = id_local === 1 ? 'FABRICA' : (id_local === 2 ? 'CAMINHÃO' : 'FORNECEDOR')
 
       setSelecLocalCarga(local);
@@ -157,7 +157,7 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
 
   }, [SemanaDados])
 
-  const cor = SemanaDados.status === '' ? '' : (SemanaDados.status === 'VAZIA' ? 'blue' : 'green');
+  const cor = SemanaDados.status === '' ? '' : (SemanaDados.status === 'VAZIA' ? 'blue' :(SemanaDados.status === 'CHEIA' ? 'green': 'yellow'));
 
   return (
     <View style={styles.Principal}>
