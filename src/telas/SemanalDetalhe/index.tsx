@@ -35,6 +35,7 @@ export function SemanalDetalhe() {
   const [location, setLocation] = useState<LocationObject | null>();
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
+  const quantidadeCaixa = dadosSemanal.QtdCaixa === undefined ? 1 : dadosSemanal.QtdCaixa;
 
 
   const dadosLocal: LocalCaixaProps[] = [];
@@ -213,8 +214,8 @@ export function SemanalDetalhe() {
     const data = new Date()
     const hora = data.getHours();
     const minutos = data.getMinutes();
-    const sec  = data.getSeconds();
-    const horaMinuto = `${hora}`.padStart(2, '0') + ':' + `${minutos}`.padStart(2, '0') + ':' + `${sec}`.padStart(2,'0')
+    const sec = data.getSeconds();
+    const horaMinuto = `${hora}`.padStart(2, '0') + ':' + `${minutos}`.padStart(2, '0') + ':' + `${sec}`.padStart(2, '0')
     const id_historico = `${dadosSemanal.id}.` + `${idCaixa}`.padStart(2, '0')
 
     if (dadosSemanal.id_caixa != null) {
@@ -252,7 +253,7 @@ export function SemanalDetalhe() {
       })
     }
 
-    if (id_local === 3 && id_status === 2){
+    if (id_local === 3 && id_status === 2) {
       EnviaNotify(dadosSemanal)
     }
 
@@ -292,13 +293,23 @@ export function SemanalDetalhe() {
     }
   }
 
-  function handleHistorico({ id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status }: SemanaProps) {
-    navigation.navigate('historicoStatus', { id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status });
+  function handleHistorico({ id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status, QtdCaixa }: SemanaProps) {
+    navigation.navigate('historicoStatus', { id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status, QtdCaixa });
+  }
+
+  function addMaisCaixas() {
+    //faz o update da collection semana
+    dadosSemanal.QtdCaixa
+    firestore().collection('semana').doc(`${dadosSemanal.id}`).update({
+      QtdCaixa: quantidadeCaixa + 1
+    })
   }
 
   useEffect(() => {
     pegaDadosCaixas();
     pegaDadosUmaCaixa();
+
+    console.log(dadosSemanal.QtdCaixa, 'teste');
 
   }, []);
 

@@ -60,6 +60,7 @@ export interface SemanaProps {
   inserido_em: Date;
   id: string;
   ativo: string;
+  QtdCaixa: number;
 }
 
 export interface Historico {

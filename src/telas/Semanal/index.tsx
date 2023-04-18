@@ -51,9 +51,9 @@ export function Semanal() {
   const navigation = useNavigation();
 
 
-  function handleDetalhes({ id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo }: SemanaProps) {
+  function handleDetalhes({ id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa }: SemanaProps) {
 
-    navigation.navigate('semanalDetalhes', { id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo });
+    navigation.navigate('semanalDetalhes', { id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa });
 
   }
 
