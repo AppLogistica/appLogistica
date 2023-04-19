@@ -12,7 +12,8 @@ import { CaixaProps, LocalCaixaProps, SemanalCard, SemanaProps } from "../../com
 import { styles } from "./styles";
 import firestore, { firebase } from '@react-native-firebase/firestore'
 import { SelectList } from 'react-native-dropdown-select-list'
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
+import 'dayjs/locale/pt-br';
 import { print } from "../../componentes/geraPDF";
 import { AntDesign, Feather, FontAwesome } from '@expo/vector-icons';
 
@@ -172,12 +173,35 @@ export function SemanalDetalhe() {
     })
   }
 
+  function confirmaDia(dataSemana: string, hoje: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      Alert.alert(
+        "Confirmação de data!", `Data da tarefa: ${dataSemana}\nData de hoje: ${hoje}\n\nDeseja continuar?`,
+        [{
+          text: 'Cancelar',
+          onPress: () => resolve(false),
+          style: 'cancel',
+        },
+        { text: 'OK', onPress: () => resolve(true) },],
+        { cancelable: false }
+      );
+    });
+  }
+
   async function salavaDados() {
 
     if (!desativarFinal) {
       if (!await confirmaFinal()) {
 
         return
+      }
+    }
+
+    const dataAtual = dayjs(new Date()).locale('pt-br').format('DD/MM/YYYY'); 
+       
+    if (`${dadosSemanal.data}` !== dataAtual && dadosSemanal.status === '') {
+      if (!await confirmaDia(`${dadosSemanal.data}`, dataAtual)) {
+         return
       }
     }
 
@@ -461,7 +485,6 @@ export function SemanalDetalhe() {
                     onPress={handleGoBack}
                   />
                 </View> : null}
-
 
               <View style={[{ flexDirection: 'column' }, { justifyContent: 'space-between' }]} >
 
