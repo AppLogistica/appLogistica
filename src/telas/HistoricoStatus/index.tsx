@@ -47,10 +47,10 @@ export function HistoricoStatus() {
         }) as Historico[];
 
         data.sort((a, b) => {
-          if (a.hora > b.hora) {
+          if (a.data + ' ' + a.hora > b.data + ' ' + b.hora) {
             return -1;
           }
-          if (a.hora > b.hora) {
+          if (a.data + ' ' + a.hora > b.data + ' ' +b.hora) {
             return 1;
           }
           return 0;

@@ -12,7 +12,6 @@ import firestore from '@react-native-firebase/firestore';
 import { styles } from "./styles";
 import { Background } from "../../componentes/Backgound";
 import { CaixaProps, SemanalCard, SemanaProps } from "../../componentes/SemanalCard";
-import { NotificacaoListener, PermissaoUsuario } from "../../componentes/Notificacao/notifica";
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import notifee, { AndroidImportance } from '@notifee/react-native';
 
@@ -50,10 +49,9 @@ export function Semanal() {
   const [meuToken, setMeuToken] = useState('');
   const navigation = useNavigation();
 
+  function handleDetalhes({ id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa, confirmado }: SemanaProps) {
 
-  function handleDetalhes({ id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa }: SemanaProps) {
-
-    navigation.navigate('semanalDetalhes', { id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa });
+    navigation.navigate('semanalDetalhes', { id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa, confirmado });
 
   }
 
@@ -74,7 +72,7 @@ export function Semanal() {
     const subscribe = await firestore()
       .collection('semana')
       .where('data', '==', date.format('DD/MM/YYYY'))
-      // .where('ativo', '==', filtro)
+   
       .onSnapshot(querySnapshot => {
         const data = querySnapshot.docs.map(doc => {
 
@@ -88,8 +86,6 @@ export function Semanal() {
 
       });
     return () => subscribe();
-
-    console.log(dadosSemana);
     
   }
 

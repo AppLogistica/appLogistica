@@ -61,6 +61,7 @@ export interface SemanaProps {
   id: string;
   ativo: string;
   QtdCaixa: number;
+  confirmado: boolean;
 }
 
 export interface Historico {

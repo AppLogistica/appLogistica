@@ -320,8 +320,8 @@ export function SemanalDetalhe() {
     }
   }
 
-  function handleHistorico({ id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status, QtdCaixa }: SemanaProps) {
-    navigation.navigate('historicoStatus', { id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status, QtdCaixa });
+  function handleHistorico({ id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status, QtdCaixa, confirmado }: SemanaProps) {
+    navigation.navigate('historicoStatus', { id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status, QtdCaixa, confirmado });
   }
 
   function addMaisCaixas() {
