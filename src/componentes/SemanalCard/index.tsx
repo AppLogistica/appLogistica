@@ -61,7 +61,8 @@ export interface SemanaProps {
   id: string;
   ativo: string;
   QtdCaixa: number;
-  confirmado: boolean;
+  //confirmado: boolean;
+  cor: string;
 }
 
 export interface Historico {
@@ -72,6 +73,7 @@ export interface Historico {
   id_caixa: number;
   local: string;
   status: string;
+  
 }
 
 interface Props extends TouchableOpacityProps {
@@ -164,7 +166,7 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
     <View style={styles.Principal}>
       <TouchableOpacity style={[styles.container, { marginTop: margem }]} {...rest}>
         <LinearGradient
-          colors={SemanaDados.ativo != 'Finalizado' ? TEMA.COLORS.FOOTER : ['green', 'green'] }
+          colors={SemanaDados.cor === 'gary' ? ['gray', 'gray'] : (SemanaDados.ativo != 'Finalizado' ? TEMA.COLORS.FOOTER : ['green', 'green']) }
           style={[styles.footer]}>
 
           <View style={[styles.linha, { backgroundColor: cor }, { opacity: cor === '' ? 0 : 0.6 }]} />

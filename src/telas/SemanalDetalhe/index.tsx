@@ -197,14 +197,6 @@ export function SemanalDetalhe() {
       }
     }
 
-    const dataAtual = dayjs(new Date()).locale('pt-br').format('DD/MM/YYYY'); 
-       
-    if (`${dadosSemanal.data}` !== dataAtual && dadosSemanal.status === '') {
-      if (!await confirmaDia(`${dadosSemanal.data}`, dataAtual)) {
-         return
-      }
-    }
-
     //Verifica se alguma caixa foi selecionada. Isso é para garantir que o idCaixa nunca seja nulo
     let idCaixa = dadosSemanal.id_caixa === null ? -1 : dadosSemanal.id_caixa;
     if (selectNumeCaixa) {
@@ -320,8 +312,8 @@ export function SemanalDetalhe() {
     }
   }
 
-  function handleHistorico({ id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status, QtdCaixa, confirmado }: SemanaProps) {
-    navigation.navigate('historicoStatus', { id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status, QtdCaixa, confirmado });
+  function handleHistorico({ id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status, QtdCaixa, cor }: SemanaProps) {
+    navigation.navigate('historicoStatus', { id_semana, ativo, data, id, id_caixa, id_fornecedor, inserido_em, status, QtdCaixa, cor });
   }
 
   function addMaisCaixas() {
