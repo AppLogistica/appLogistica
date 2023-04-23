@@ -182,11 +182,11 @@ export function SemanalDetalhe() {
     handleGoBack();
   }
 
-  function avancaEtapa(etp: number){
-    
+  function avancaEtapa(etp: number) {
+
   }
 
-  async function salavaDados() {
+  async function salavaDados(soma: number) {
 
     //Verifica se alguma caixa foi selecionada. Isso é para garantir que o idCaixa nunca seja nulo
     let idCaixa = dadosSemanal.id_caixa === null ? -1 : dadosSemanal.id_caixa;
@@ -196,7 +196,7 @@ export function SemanalDetalhe() {
 
     //Caso não haja id_caixa, seja ja salvo na collection semana, seja nas opções ele irá abortar o salvamento 
     if (idCaixa === -1) {
-      Alert.alert('','selecione uma caixa!')
+      Alert.alert('', 'selecione uma caixa!')
       return
     }
 
@@ -209,35 +209,37 @@ export function SemanalDetalhe() {
         return
       }
     }
-   
+
     let etapaPro;
-   
+
     if (!selecLocalCarga && !selectCaixaStatus) {
       etapaPro = processo.find(item => item.id === '1')
-      setUseEtapa(1);
+      setUseEtapa(soma);
     } else {
-      if (Useetapa === -1){
+      if (Useetapa === -1) {
         const pross = processo.find(item => item.nomeLocal === selecLocalCarga && item.nomeStatus === selectCaixaStatus)
 
-        if (pross){
-          const prox = parseInt(pross.id) + 1;
+        if (pross) {
+          let prox = parseInt(pross.id) + soma;
+          prox = prox < 1 ? 1 : prox;
           setUseEtapa(prox);
-          etapaPro = processo.find(item => item.id === `${prox}`);   
-          if (!await Proxima()){
+          etapaPro = processo.find(item => item.id === `${prox}`);
+          if (!await Proxima()) {
             return
-          }  
+          }
         }
-        
-      } else{
-        const proxEtapa = parseInt(`${Useetapa}`) +1;
+
+      } else {
+        let proxEtapa = parseInt(`${Useetapa}`) + soma;
+        proxEtapa = proxEtapa < 1 ? 1 : proxEtapa;
         setUseEtapa(proxEtapa);
-        etapaPro = processo.find(item => item.id === `${proxEtapa}`);  
-        if (!await Proxima()){
+        etapaPro = processo.find(item => item.id === `${proxEtapa}`);
+        if (!await Proxima()) {
           return
-        }  
+        }
       }
     }
-    
+
     const id_status = etapaPro?.id_status as number;
     const id_local = etapaPro?.id_local as number;
 
@@ -250,12 +252,9 @@ export function SemanalDetalhe() {
 
     setSelecLocalCarga(etapaPro?.nomeLocal as string);
     setSelectCaixaStatus(etapaPro?.nomeStatus as string);
-        
+
     const statusEtapa = etapaPro?.nomeStatus as string;
     const localEtapa = etapaPro?.nomeLocal as string;
-
-    console.log('local', localEtapa, 'id', id_local);
-    console.log('staus', statusEtapa, 'id', id_status);
 
     const data = new Date()
     const hora = data.getHours();
@@ -299,16 +298,16 @@ export function SemanalDetalhe() {
         hora: horaMinuto
       })
     }
-    
+
     if (id_local === 3 && id_status === 2) {
-    //  EnviaNotify(dadosSemanal)
+      //  EnviaNotify(dadosSemanal)
     }
 
     if (id_status === 3) {
       Finalizar();
     }
 
-    if (etapaPro?.id === '1'){
+    if (etapaPro?.id === '1') {
       handleGoBack();
     }
   }
@@ -400,23 +399,23 @@ export function SemanalDetalhe() {
     }
   }
 
-  async function etapasProcesso(){
+  async function etapasProcesso() {
 
     const subscribe = await firestore()
-    .collection('ordemProceso')
-    .onSnapshot(querySnapshot => {
-      const data = querySnapshot.docs.map(doc => {
+      .collection('ordemProceso')
+      .onSnapshot(querySnapshot => {
+        const data = querySnapshot.docs.map(doc => {
 
-        return {
-          id: doc.id,
-          ...doc.data()
-        }
-      }) as ProcessoProps[];
+          return {
+            id: doc.id,
+            ...doc.data()
+          }
+        }) as ProcessoProps[];
 
-      setProcesso(data);
+        setProcesso(data);
 
-    });
-  return () => subscribe();
+      });
+    return () => subscribe();
   }
 
   useEffect(() => {
@@ -451,14 +450,14 @@ export function SemanalDetalhe() {
             <View style={[{ width: '80%' }, { marginHorizontal: '10%' }]}>
 
               {dadosSemanal.ativo !== 'Finalizado' ?
-                <View style={[{ marginVertical: 10}]}>
+                <View style={[{ marginVertical: 10 }]}>
                   <Text > LOCAL </Text>
 
                   <Input
-                      style={[{ borderWidth: 1.8 }, { fontSize: 16 }, { borderColor: '#7fdec7' }]}
-                      value={selecLocalCarga}
-                      isDisabled={true} >
-                    </Input>
+                    style={[{ borderWidth: 1.8 }, { fontSize: 16 }, { borderColor: '#7fdec7' }]}
+                    value={selecLocalCarga}
+                    isDisabled={true} >
+                  </Input>
                 </View> : null}
 
               {dadosSemanal.ativo !== 'Finalizado' ?
@@ -466,10 +465,10 @@ export function SemanalDetalhe() {
                   <Text> STATUS DA CAIXA </Text>
 
                   <Input
-                      style={[{ borderWidth: 1.8 }, { fontSize: 16 }, { borderColor: '#7fdec7' }]}
-                      value={selectCaixaStatus}
-                      isDisabled={true} >
-                    </Input>
+                    style={[{ borderWidth: 1.8 }, { fontSize: 16 }, { borderColor: '#7fdec7' }]}
+                    value={selectCaixaStatus}
+                    isDisabled={true} >
+                  </Input>
                 </View> : null}
 
               {dadosSemanal.ativo !== 'Finalizado' ?
@@ -509,23 +508,32 @@ export function SemanalDetalhe() {
 
               {dadosSemanal.ativo !== 'Finalizado' ?
                 <View style={styles.container}>
+
                   <Button
-                    title="Confirma"
-                    style={styles.buttonConfirma}
-                    onPress={salavaDados}
-                  />
-                  <Button
-                    title="Cancelar"
+                    title="Etapa anterior"
                     style={styles.buttonCancela}
-                    onPress={handleGoBack}
+                    onPress={() => salavaDados(-1)}
                   />
+
+                  <Button
+                    title="Proximo etapa"
+                    style={styles.buttonConfirma}
+                    onPress={() => salavaDados(1)}
+                  />
+
                 </View> : null}
 
               <View style={[{ flexDirection: 'column' }, { justifyContent: 'space-between' }]} >
 
                 <Button
+                  title="Voltar"
+                  style={[ { marginBottom: 20 }, styles.buttonPdf, dadosSemanal.ativo === 'Finalizado' ? { marginTop: 20 } : null]}
+                  onPress={() => handleGoBack()}
+                />
+
+                <Button
                   title="Gerar Recibo"
-                  style={[{ marginBottom: 20 }, styles.buttonPdf, dadosSemanal.ativo === 'Finalizado' ? { marginTop: 20 } : null]}
+                  style={[{ marginBottom: 20 }, styles.buttonPdf ]}
                   onPress={() => print(dadosSemanal)}
                   leftIcon={<AntDesign name="pdffile1" size={30} color="black" />}
                 />

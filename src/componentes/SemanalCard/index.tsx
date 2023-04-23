@@ -136,8 +136,6 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
 
       const { id_local, id_status } = doc.data() as CaixaProps;
 
-      console.log(id_local);
-
       const status = id_status === 1 ? 'VAZIA' : ( id_status === 2 ? 'CHEIA' : 'DESCARREGADO');
       const local = id_local === 1 ? 'FABRICA' : (id_local === 2 ? 'CAMINHÃO' : 'FORNECEDOR')
 
@@ -168,7 +166,7 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
 
   }, [SemanaDados])
 
-  const cor = SemanaDados.status === '' ? '' : (SemanaDados.status === 'VAZIA' ? 'blue' :(SemanaDados.status === 'CHEIA' ? 'green': 'yellow'));
+  const cor = SemanaDados.status === '' ? '' : (SemanaDados.status === 'VAZIA' ? 'blue' :'green');
 
   return (
     <View style={styles.Principal}>
@@ -194,9 +192,10 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
               {`${SemanaDados.id_fornecedor}`.padStart(2,'0')} : {dadosFornec}
             </Text>
 
-            <Text style={[styles.Detalhes, { opacity: SemanaDados.status === '' ? 0 : 1 }, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]}>
-              Caixa {`${SemanaDados.id_caixa}`.padStart(2, '0')} : {selectCaixaStatus}
+            <Text style={[styles.Detalhes, { opacity: SemanaDados.status === '' && SemanaDados.ativo === 'Inativos' ? 0 : 1 }, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]}>
+              { SemanaDados.ativo === 'Finalizado' ? 'DESCARREGADO' : `Caixa ${`${SemanaDados.id_caixa}`.padStart(2, '0')} : ${selectCaixaStatus}`}
             </Text>
+
 
             <Text style={[styles.Endereco, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]}>
               {cidade}
