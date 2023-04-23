@@ -49,10 +49,34 @@ export function Semanal() {
   const [meuToken, setMeuToken] = useState('');
   const navigation = useNavigation();
 
-  function handleDetalhes({ id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa, confirmado }: SemanaProps) {
+  function confirma(): Promise<boolean> {
+    return new Promise((resolve) => {
+      Alert.alert(
+        "Confirmação", "Essa tarefa ainda não foi confirmada\n\n"
+      + "Deseja continuar?",
+        [{
+          text: 'Cancelar',
+          onPress: () => resolve(false),
+          style: 'cancel',
+        },
+        { text: 'OK', onPress: () => resolve(true) },],
+        { cancelable: false }
+      );
+    });
+  }
 
-    navigation.navigate('semanalDetalhes', { id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa, confirmado });
+  async function handleDetalhes({ id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa, cor }: SemanaProps) {
 
+    let conf = true
+
+    if (cor === 'gray') {
+      conf = await confirma();
+      if (conf) {
+        navigation.navigate('semanalDetalhes', { id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa, cor });
+      }
+    } else {
+      navigation.navigate('semanalDetalhes', { id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa, cor });
+    }
   }
 
   const proximo = () => {
@@ -72,7 +96,7 @@ export function Semanal() {
     const subscribe = await firestore()
       .collection('semana')
       .where('data', '==', date.format('DD/MM/YYYY'))
-   
+
       .onSnapshot(querySnapshot => {
         const data = querySnapshot.docs.map(doc => {
 
@@ -86,9 +110,9 @@ export function Semanal() {
 
       });
     return () => subscribe();
-    
-  }
 
+  }
+  // @ts-ignore
   const handleMessagingToken = async token => {
     console.log('handleMessagingToken', token);
     setMeuToken(token);
@@ -96,13 +120,13 @@ export function Semanal() {
       asToken: token
     })
   }
-
+  // @ts-ignore
   const handleMessageReceived = messsage => {
     createAndroidNotificationChannels(messsage);
     console.log('handleMessageReceived', messsage);
 
   }
-
+  // @ts-ignore
   const handleNotificationOpenApp = message => {
     console.log('handleNotificationOpenApp', message);
 
@@ -144,7 +168,7 @@ export function Semanal() {
     handleInitialNotification();
     pegaDadosSemana();
     messaging().registerDeviceForRemoteMessages
-    
+
     messaging().getToken().then(handleMessagingToken);
     const removeTokenRefresh = messaging().onTokenRefresh(handleMessagingToken);
     const removeOnMessage = messaging().onMessage(handleMessageReceived)
@@ -228,7 +252,7 @@ export function Semanal() {
                 { justifyContent: 'center' },
                 { width: '25%' },
 
-              ]}><Text>Finalizado</Text></TouchableOpacity>
+              ]}><Text>Descarregado</Text></TouchableOpacity>
           </View>
 
           <FlatList

@@ -20,6 +20,7 @@ export interface CaixaProps {
   Latitude: number | null;
   Longitude: number | null;
   livre: boolean;
+  etapa: number;
 }
 
 export interface EnderecoProps {
@@ -73,7 +74,14 @@ export interface Historico {
   id_caixa: number;
   local: string;
   status: string;
-  
+}
+
+export interface  ProcessoProps {
+  id: string;
+  id_local: number;
+  nomeLocal: string;
+  id_status: number;
+  nomeStatus: string;
 }
 
 interface Props extends TouchableOpacityProps {
