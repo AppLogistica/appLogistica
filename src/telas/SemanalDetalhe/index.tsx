@@ -300,7 +300,7 @@ export function SemanalDetalhe() {
     }
 
     if (id_local === 3 && id_status === 2) {
-      //  EnviaNotify(dadosSemanal)
+      EnviaNotify(dadosSemanal)
     }
 
     if (id_status === 3) {
@@ -527,13 +527,13 @@ export function SemanalDetalhe() {
 
                 <Button
                   title="Voltar"
-                  style={[ { marginBottom: 20 }, styles.buttonPdf, dadosSemanal.ativo === 'Finalizado' ? { marginTop: 20 } : null]}
+                  style={[{ marginBottom: 20 }, styles.buttonPdf, dadosSemanal.ativo === 'Finalizado' ? { marginTop: 20 } : null]}
                   onPress={() => handleGoBack()}
                 />
 
                 <Button
                   title="Gerar Recibo"
-                  style={[{ marginBottom: 20 }, styles.buttonPdf ]}
+                  style={[{ marginBottom: 20 }, styles.buttonPdf]}
                   onPress={() => print(dadosSemanal)}
                   leftIcon={<AntDesign name="pdffile1" size={30} color="black" />}
                 />
