@@ -155,10 +155,11 @@ export function SemanalDetalhe() {
     });
   }
 
-  function Proxima(): Promise<boolean> {
+  function Proxima(proxAnt: string): Promise<boolean> {
+
     return new Promise((resolve) => {
       Alert.alert(
-        "Proxima etapa", "Confirmar?",
+        `${proxAnt} etapa`, "Confirmar?",
         [{
           text: 'Cancelar',
           onPress: () => resolve(false),
@@ -180,10 +181,6 @@ export function SemanalDetalhe() {
     })
 
     handleGoBack();
-  }
-
-  function avancaEtapa(etp: number) {
-
   }
 
   async function salavaDados(soma: number) {
@@ -211,41 +208,53 @@ export function SemanalDetalhe() {
     }
 
     let etapaPro;
+    let proxAnt = 'Proxima';
+
+    if (soma === -1) {
+      proxAnt = "Voltar";
+    }
 
     if (!selecLocalCarga && !selectCaixaStatus) {
       etapaPro = processo.find(item => item.id === '1')
       setUseEtapa(soma);
     } else {
-      if (Useetapa === -1) {
+    
+      if (Useetapa < 0) {
         const pross = processo.find(item => item.nomeLocal === selecLocalCarga && item.nomeStatus === selectCaixaStatus)
 
         if (pross) {
           let prox = parseInt(pross.id) + soma;
           prox = prox < 1 ? 1 : prox;
-          setUseEtapa(prox);
+
+         
           etapaPro = processo.find(item => item.id === `${prox}`);
-          if (!await Proxima()) {
+          if (!await Proxima(proxAnt)) {
             return
           }
+          setUseEtapa(prox);
         }
 
       } else {
+        
         let proxEtapa = parseInt(`${Useetapa}`) + soma;
         proxEtapa = proxEtapa < 1 ? 1 : proxEtapa;
-        setUseEtapa(proxEtapa);
+        
         etapaPro = processo.find(item => item.id === `${proxEtapa}`);
-        if (!await Proxima()) {
+
+        if (!await Proxima(proxAnt)) {
           return
         }
+        setUseEtapa(proxEtapa);
       }
     }
 
     const id_status = etapaPro?.id_status as number;
     const id_local = etapaPro?.id_local as number;
 
+ 
     if (id_status === 3) {
       if (!await confirmaFinal()) {
-
+        setUseEtapa(-1);
         return
       }
     }
@@ -300,7 +309,7 @@ export function SemanalDetalhe() {
     }
 
     if (id_local === 3 && id_status === 2) {
-      EnviaNotify(dadosSemanal)
+      // EnviaNotify(dadosSemanal)
     }
 
     if (id_status === 3) {
@@ -333,7 +342,11 @@ export function SemanalDetalhe() {
         setLongitude(Longitude);
       }
 
-      setUseEtapa(etapa);
+      if (etapa === undefined) {
+        setUseEtapa(-1);
+      } else {
+        setUseEtapa(etapa);
+      }
 
       setSelecLocalCarga(local);
       setAtualLocalCarga(id_local);
@@ -518,7 +531,7 @@ export function SemanalDetalhe() {
                   <Button
                     title="Proximo etapa"
                     style={styles.buttonConfirma}
-                    onPress={() => salavaDados(1)}
+                    onPress={() => salavaDados(+1)}
                   />
 
                 </View> : null}

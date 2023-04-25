@@ -11,6 +11,9 @@ import { Background } from "../../componentes/Backgound";
 import { FornecedorProps, Historico, SemanaProps } from "../../componentes/SemanalCard";
 import { TEMA } from "../../tema/tema";
 import firestore, { firebase } from '@react-native-firebase/firestore'
+import dayjs from 'dayjs';
+import 'dayjs/locale/pt-br';
+import moment from 'moment';
 
 export function HistoricoStatus() {
 
@@ -46,17 +49,19 @@ export function HistoricoStatus() {
           }
         }) as Historico[];
 
-        data.sort((a, b) => {
-          if (a.data + ' ' + a.hora > b.data + ' ' + b.hora) {
+
+        const sortData = data.sort((a, b) => {
+
+          if (moment(a.data + ' ' + a.hora, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DD HH:mm:ss') > moment(b.data + ' ' + b.hora, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DD HH:mm:ss')) {
             return -1;
           }
-          if (a.data + ' ' + a.hora > b.data + ' ' +b.hora) {
+          if (moment(a.data + ' ' + a.hora, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DD HH:mm:ss') < moment(b.data + ' ' + b.hora, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DD HH:mm:ss')) {
             return 1;
           }
           return 0;
         });
 
-        setHistorico(data);
+        setHistorico(sortData);
       });
 
     return () => subscribe();
@@ -74,12 +79,12 @@ export function HistoricoStatus() {
       <Background>
         <SafeAreaView style={[{ marginTop: '10%' }]}>
 
-          <View style={[{ backgroundColor: '#7fdec7' }, {alignItems: 'center'}]} >
-            <Text style={[{fontSize: 18}]}>HISTÓRICO</Text>
+          <View style={[{ backgroundColor: '#7fdec7' }, { alignItems: 'center' }]} >
+            <Text style={[{ fontSize: 18 }]}>HISTÓRICO</Text>
           </View>
 
           <View style={[{ justifyContent: 'center' }, { alignItems: 'center' }, { marginBottom: 40 }]}>
-            <Text style={[{ fontSize: 20 }, {marginTop: 15}]} > Fornecedor {`${hist.id_fornecedor}`.padStart(2, '0')} : {fornecedor?.nome}</Text>
+            <Text style={[{ fontSize: 20 }, { marginTop: 15 }]} > Fornecedor {`${hist.id_fornecedor}`.padStart(2, '0')} : {fornecedor?.nome}</Text>
           </View>
           <FlatList
             data={historico}
