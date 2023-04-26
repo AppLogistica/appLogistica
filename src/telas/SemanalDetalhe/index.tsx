@@ -218,7 +218,7 @@ export function SemanalDetalhe() {
       etapaPro = processo.find(item => item.id === '1')
       setUseEtapa(soma);
     } else {
-    
+
       if (Useetapa < 0) {
         const pross = processo.find(item => item.nomeLocal === selecLocalCarga && item.nomeStatus === selectCaixaStatus)
 
@@ -226,7 +226,7 @@ export function SemanalDetalhe() {
           let prox = parseInt(pross.id) + soma;
           prox = prox < 1 ? 1 : prox;
 
-         
+
           etapaPro = processo.find(item => item.id === `${prox}`);
           if (!await Proxima(proxAnt)) {
             return
@@ -235,10 +235,10 @@ export function SemanalDetalhe() {
         }
 
       } else {
-        
+
         let proxEtapa = parseInt(`${Useetapa}`) + soma;
         proxEtapa = proxEtapa < 1 ? 1 : proxEtapa;
-        
+
         etapaPro = processo.find(item => item.id === `${proxEtapa}`);
 
         if (!await Proxima(proxAnt)) {
@@ -251,7 +251,7 @@ export function SemanalDetalhe() {
     const id_status = etapaPro?.id_status as number;
     const id_local = etapaPro?.id_local as number;
 
- 
+
     if (id_status === 3) {
       if (!await confirmaFinal()) {
         setUseEtapa(-1);
@@ -309,7 +309,7 @@ export function SemanalDetalhe() {
     }
 
     if (id_local === 3 && id_status === 2) {
-      // EnviaNotify(dadosSemanal)
+      EnviaNotify(dadosSemanal)
     }
 
     if (id_status === 3) {
