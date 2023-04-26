@@ -167,12 +167,13 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
   }, [SemanaDados])
 
   const cor = SemanaDados.status === '' ? '' : (SemanaDados.status === 'VAZIA' ? 'blue' :'green');
-
+ // colors={SemanaDados.cor === 'gray' ? ['#aeb5b5', '#e6ebeb'] : (SemanaDados.ativo != 'Finalizado' ? TEMA.COLORS.FOOTER : ['green', 'green']) }
   return (
     <View style={styles.Principal}>
       <TouchableOpacity style={[styles.container, { marginTop: margem }]} {...rest}>
         <LinearGradient
-          colors={SemanaDados.cor === 'gray' ? ['#aeb5b5', '#e6ebeb'] : (SemanaDados.ativo != 'Finalizado' ? TEMA.COLORS.FOOTER : ['green', 'green']) }
+          colors={SemanaDados.ativo === 'Finalizado' ? ['green', 'green'] : (SemanaDados.cor === 'gray' ? ['#aeb5b5', '#e6ebeb'] :TEMA.COLORS.FOOTER )}
+
           style={[styles.footer]}>
 
           <View style={[styles.linha, { backgroundColor: cor }, { opacity: cor === '' ? 0 : 0.6 }]} />

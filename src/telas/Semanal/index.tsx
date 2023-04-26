@@ -69,7 +69,7 @@ export function Semanal() {
 
     let conf = true
 
-    if (cor === 'gray') {
+    if (cor === 'gray' && ativo === 'Inativos') {
       conf = await confirma();
       if (conf) {
         navigation.navigate('semanalDetalhes', { id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa, cor });
