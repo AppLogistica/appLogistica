@@ -65,6 +65,13 @@ export const styles = StyleSheet.create({
     textAlign: 'right',
     color: 'blue'
    
-  }
+  },
+
+  buttonPdf: {
+    width: '50%',
+    height: 50,
+    borderRadius: 5,
+    backgroundColor: TEMA.COLORS.TEMA_AZUL,
+  },
 
 });

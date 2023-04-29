@@ -1,5 +1,5 @@
 
-import { TouchableOpacity, TouchableOpacityProps, Text } from 'react-native';
+import { TouchableOpacity, TouchableOpacityProps, Text, TouchableWithoutFeedback, Modal, Button as Botao } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from './styles';
 import { TEMA } from '../../tema/tema';
@@ -8,6 +8,7 @@ import * as Linking from 'expo-linking';
 import firestore from '@react-native-firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Dadosgeolocal, location } from '../buscaLocal/geolocal';
+import { Button } from "../../componentes/botao/Button";
 //import * as SQLite from 'expo-sqlite';
 //import caixa from '../DatabaseSQLite/StatusSQl/Status';
 //import db from '../DatabaseSQLite/Database';
@@ -76,7 +77,7 @@ export interface Historico {
   status: string;
 }
 
-export interface  ProcessoProps {
+export interface ProcessoProps {
   id: string;
   id_local: number;
   nomeLocal: string;
@@ -136,7 +137,7 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
 
       const { id_local, id_status } = doc.data() as CaixaProps;
 
-      const status = id_status === 1 ? 'VAZIA' : ( id_status === 2 ? 'CHEIA' : 'DESCARREGADO');
+      const status = id_status === 1 ? 'VAZIA' : (id_status === 2 ? 'CHEIA' : 'DESCARREGADO');
       const local = id_local === 1 ? 'FABRICA' : (id_local === 2 ? 'CAMINHÃO' : 'FORNECEDOR')
 
       setSelecLocalCarga(local);
@@ -166,13 +167,31 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
 
   }, [SemanaDados])
 
-  const cor = SemanaDados.status === '' ? '' : (SemanaDados.status === 'VAZIA' ? 'blue' :'green');
- // colors={SemanaDados.cor === 'gray' ? ['#aeb5b5', '#e6ebeb'] : (SemanaDados.ativo != 'Finalizado' ? TEMA.COLORS.FOOTER : ['green', 'green']) }
+  const [showMenu, setShowMenu] = useState(false);
+
+  const handleLongPress = () => {
+    setShowMenu(true);
+  };
+
+  const handleConfirm = () => {
+    
+    
+
+    setShowMenu(false);
+  };
+
+  const handleCancel = () => {
+    // Lógica para cancelar a ação
+    setShowMenu(false);
+  };
+
+  const cor = SemanaDados.status === '' ? '' : (SemanaDados.status === 'VAZIA' ? 'blue' : 'green');
+  // colors={SemanaDados.cor === 'gray' ? ['#aeb5b5', '#e6ebeb'] : (SemanaDados.ativo != 'Finalizado' ? TEMA.COLORS.FOOTER : ['green', 'green']) }
   return (
     <View style={styles.Principal}>
-      <TouchableOpacity style={[styles.container, { marginTop: margem }]} {...rest}>
+      <TouchableOpacity style={[styles.container, { marginTop: margem }]} {...rest} onLongPress={handleLongPress}>
         <LinearGradient
-          colors={SemanaDados.ativo === 'Finalizado' ? ['green', 'green'] : (SemanaDados.cor === 'gray' ? ['#aeb5b5', '#e6ebeb'] :TEMA.COLORS.FOOTER )}
+          colors={SemanaDados.ativo === 'Finalizado' ? ['green', 'green'] : (SemanaDados.cor === 'gray' ? ['#aeb5b5', '#e6ebeb'] : TEMA.COLORS.FOOTER)}
 
           style={[styles.footer]}>
 
@@ -181,24 +200,24 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
           <View style={[{ width: '90%' }, { marginLeft: 10 }, { marginTop: 10 }]}>
 
             <View style={[{ flexDirection: 'row' }, { justifyContent: 'space-between' }]}>
-              <Text style={[styles.Produtor, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]}>
+              <Text style={[styles.Produtor, SemanaDados.ativo === 'Finalizado' ? { color: 'white' } : null]}>
                 {`${SemanaDados.data}`}
               </Text>
-              <Text style={[styles.idSemana, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]} >
+              <Text style={[styles.idSemana, SemanaDados.ativo === 'Finalizado' ? { color: 'white' } : null]} >
                 {SemanaDados.id_semana}
               </Text>
             </View>
 
-            <Text style={[styles.Produtor, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]}>
-              {`${SemanaDados.id_fornecedor}`.padStart(2,'0')} : {dadosFornec}
+            <Text style={[styles.Produtor, SemanaDados.ativo === 'Finalizado' ? { color: 'white' } : null]}>
+              {`${SemanaDados.id_fornecedor}`.padStart(2, '0')} : {dadosFornec}
             </Text>
 
-            <Text style={[styles.Detalhes, { opacity: SemanaDados.status === '' && SemanaDados.ativo === 'Inativos' ? 0 : 1 }, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]}>
-              { SemanaDados.ativo === 'Finalizado' ? 'DESCARREGADO' : `Caixa ${`${SemanaDados.id_caixa}`.padStart(2, '0')} : ${selectCaixaStatus}`}
+            <Text style={[styles.Detalhes, { opacity: SemanaDados.status === '' && SemanaDados.ativo === 'Inativos' ? 0 : 1 }, SemanaDados.ativo === 'Finalizado' ? { color: 'white' } : null]}>
+              {SemanaDados.ativo === 'Finalizado' ? 'DESCARREGADO' : `Caixa ${`${SemanaDados.id_caixa}`.padStart(2, '0')} : ${selectCaixaStatus}`}
             </Text>
 
 
-            <Text style={[styles.Endereco, SemanaDados.ativo === 'Finalizado' ? {color: 'white'} : null]}>
+            <Text style={[styles.Endereco, SemanaDados.ativo === 'Finalizado' ? { color: 'white' } : null]}>
               {cidade}
             </Text>
 
@@ -218,6 +237,19 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
           </View>
         </LinearGradient>
       </TouchableOpacity>
+      <Modal visible={showMenu} animationType="slide" style={[{ backgroundColor: 'red' }, { width: '100%' }, { height: '100%' }]}>
+        <View style={[{ width: '100%' }, { height: '60%' }, { display: 'flex' }, { justifyContent: 'center' }, { alignItems: 'center' },]}>
+
+          <View style={[{borderColor: '#7fdec7'}, {borderWidth: 1}, { marginBottom: 50 }, {borderRadius: 20}, {width: '90%'}]}>
+            <Text style={[{ fontSize: 16 }, { textAlign: 'center' }, {margin: 10}]}>
+              Caso o fornecedor já estaja pronto para receber a caixa vazia, clique em confirmar {`\n`}
+              Caso Não tenha essa confirmação, ou confirmou errado, clique em cancelar</Text>
+          </View>
+
+          <Button title="Confirmar" onPress={handleConfirm} style={[styles.buttonPdf, { marginBottom: 20 }]} />
+          <Button title="Cancelar" onPress={handleCancel} style={styles.buttonPdf} />
+        </View>
+      </Modal>
     </View>
   );
 }

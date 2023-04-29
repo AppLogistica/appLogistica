@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { TouchableOpacity, View, Text, FlatList, Alert } from "react-native";
+import { TouchableOpacity, View, Text, FlatList, Alert, TouchableWithoutFeedback, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NativeBaseProvider } from "native-base";
@@ -50,6 +50,21 @@ export function Semanal() {
   const [filtro, setFiltro] = useState('Todos');
   const [meuToken, setMeuToken] = useState('');
   const navigation = useNavigation();
+  const [showMenu, setShowMenu] = useState(false);
+
+  const handleLongPress = () => {
+    setShowMenu(true);
+  };
+
+  const handleConfirm = () => {
+    // Lógica para confirmar a ação
+    setShowMenu(false);
+  };
+
+  const handleCancel = () => {
+    // Lógica para cancelar a ação
+    setShowMenu(false);
+  };
 
   function confirma(): Promise<boolean> {
     return new Promise((resolve) => {
@@ -97,7 +112,7 @@ export function Semanal() {
 
     const subscribe = await firestore()
       .collection('semana')
-     // .where('data', '==', date.format('DD/MM/YYYY'))
+      .where('data', '==', date.format('DD/MM/YYYY'))
 
       .onSnapshot(querySnapshot => {
         const data = querySnapshot.docs.map(doc => {
@@ -194,6 +209,27 @@ export function Semanal() {
     } catch (error) {
     }
   }
+
+  function MenuConfirma(){
+
+    return (
+      <View>
+        <TouchableWithoutFeedback onLongPress={handleLongPress}>
+          <View>
+            <Text>Clique e segure para abrir o menu</Text>
+          </View>
+        </TouchableWithoutFeedback>
+        <Modal visible={showMenu} animationType="slide">
+          <View>
+            <Text>Menu</Text>
+            <Button title="Confirmar" onPress={handleConfirm} />
+            <Button title="Cancelar" onPress={handleCancel} />
+          </View>
+        </Modal>
+      </View>
+    );
+  };
+
 
   useEffect(() => {
 
@@ -293,11 +329,14 @@ export function Semanal() {
             style={[{ marginBottom: 80 }]}
 
             renderItem={({ item }) => (
+
               <SemanalCard
                 SemanaDados={item}
                 margem={50}
                 onPress={() => handleDetalhes(item)}
-              />)}
+              />
+              
+              )}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.contentList}
           />

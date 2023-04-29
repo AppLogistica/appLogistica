@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Location from 'expo-location';
 
-import { View, Text, Alert, ScrollView, Vibration } from 'react-native';
+import { View, Text, Alert, ScrollView, Vibration, TouchableWithoutFeedback, Modal } from 'react-native';
 import { Background } from "../../componentes/Backgound";
 import { Button } from "../../componentes/botao/Button";
 import { CaixaProps, LocalCaixaProps, ProcessoProps, SemanalCard, SemanaProps } from "../../componentes/SemanalCard";
@@ -19,7 +19,6 @@ import { AntDesign, Feather, FontAwesome } from '@expo/vector-icons';
 
 import { LocationObject } from "expo-location";
 import { EnviaNotify } from "../../componentes/fireNotify/envia";
-
 
 type selectProps = {
   key: any;
@@ -448,7 +447,7 @@ export function SemanalDetalhe() {
       etapa: -1
     })
   }
-
+  
   return (
     <NativeBaseProvider>
       <Background>
