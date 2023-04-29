@@ -170,18 +170,30 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
   const [showMenu, setShowMenu] = useState(false);
 
   const handleLongPress = () => {
-    setShowMenu(true);
+
+
+    if(SemanaDados.id_caixa === null) {
+      setShowMenu(true);
+    }
+   
   };
 
   const handleConfirm = () => {
-    
-    
+
+    //Faz o update da collection caixa, 
+    firestore().collection('semana').doc(`${SemanaDados.id}`).update({
+      cor: '#7fdec7'
+    })
 
     setShowMenu(false);
   };
 
   const handleCancel = () => {
-    // Lógica para cancelar a ação
+
+    //Faz o update da collection caixa, 
+    firestore().collection('semana').doc(`${SemanaDados.id}`).update({
+      cor: 'gray'
+    })
     setShowMenu(false);
   };
 
@@ -240,8 +252,8 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
       <Modal visible={showMenu} animationType="slide" style={[{ backgroundColor: 'red' }, { width: '100%' }, { height: '100%' }]}>
         <View style={[{ width: '100%' }, { height: '60%' }, { display: 'flex' }, { justifyContent: 'center' }, { alignItems: 'center' },]}>
 
-          <View style={[{borderColor: '#7fdec7'}, {borderWidth: 1}, { marginBottom: 50 }, {borderRadius: 20}, {width: '90%'}]}>
-            <Text style={[{ fontSize: 16 }, { textAlign: 'center' }, {margin: 10}]}>
+          <View style={[{ borderColor: '#7fdec7' }, { borderWidth: 1 }, { marginBottom: 50 }, { borderRadius: 20 }, { width: '90%' }]}>
+            <Text style={[{ fontSize: 16 }, { textAlign: 'center' }, { margin: 10 }]}>
               Caso o fornecedor já estaja pronto para receber a caixa vazia, clique em confirmar {`\n`}
               Caso Não tenha essa confirmação, ou confirmou errado, clique em cancelar</Text>
           </View>
