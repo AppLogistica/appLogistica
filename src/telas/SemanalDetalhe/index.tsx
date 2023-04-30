@@ -293,7 +293,7 @@ export function SemanalDetalhe() {
     } else if (id_status === 2 && id_local === 2) {
       novaCor = '#FF5733';
     } else if (id_status === 2 && id_local === 1) {
-      novaCor = '#1E8449';
+      novaCor = '#b97a56';
     }
 
     //console.log(novaCor);
