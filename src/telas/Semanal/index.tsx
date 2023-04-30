@@ -113,7 +113,6 @@ export function Semanal() {
     const subscribe = await firestore()
       .collection('semana')
       .where('data', '==', date.format('DD/MM/YYYY'))
-
       .onSnapshot(querySnapshot => {
         const data = querySnapshot.docs.map(doc => {
 

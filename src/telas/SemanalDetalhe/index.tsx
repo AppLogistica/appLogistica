@@ -286,12 +286,34 @@ export function SemanalDetalhe() {
       etapa: etapaPro?.id
     })
 
+    let novaCor = id_status === 1 ? '#4444fa' : (id_status === 2 ? '#209b20' : '#f39c12')
+
+    if (id_status === 1 && id_local === 3) {
+      novaCor = '#e8e829';
+    } else if (id_status === 2 && id_local === 2) {
+      novaCor = '#FF5733';
+    } else if (id_status === 2 && id_local === 1) {
+      novaCor = '#1E8449';
+    }
+
+    //console.log(novaCor);
+    
+    //1 - gray    Ainda não foi confirmado com o fornecedor
+    //2 - #7fdec7 Entrega da caixa vazia confirmada
+    //3 - #4444fa vazia x caminhão
+    //4 - #e8e829 vaiza x fornecedor
+    //5 - #209b20 cheia x fornecedor
+    //6 - #FF5733 cheia x caminhão
+    //7 - #1E8449 cheia x fabrica
+    //8 - #f39c12 vaiza x fabrica -- Descarregada
+
     //faz o update da collection semana
     firestore().collection('semana').doc(`${dadosSemanal.id}`).update({
       status: statusEtapa,
       id_caixa: idCaixa,
       id_semana: id_historico,
-      ativo: 'Iniciado'
+      ativo: 'Iniciado',
+      cor: novaCor
     })
 
     if (atualLocalCarga != id_local || atualCaixaStatus != id_status) {
@@ -394,7 +416,7 @@ export function SemanalDetalhe() {
         console.log('Documento não encontrado!');
         return;
       }
-      // return
+
       snapshot.forEach(doc => {
         firestore().collection('historicoStatus').doc(`${doc.id}`).delete()
       });
@@ -404,7 +426,8 @@ export function SemanalDetalhe() {
         status: '',
         ativo: 'Inativos',
         id_caixa: null,
-        id_semana: dadosSemanal.id
+        id_semana: dadosSemanal.id,
+        cor: 'gray'
       })
 
       navigation.goBack();
@@ -447,7 +470,7 @@ export function SemanalDetalhe() {
       etapa: -1
     })
   }
-  
+
   return (
     <NativeBaseProvider>
       <Background>
