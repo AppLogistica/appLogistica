@@ -295,8 +295,6 @@ export function SemanalDetalhe() {
     } else if (id_status === 2 && id_local === 1) {
       novaCor = '#b97a56';
     }
-
-    //console.log(novaCor);
     
     //1 - gray    Ainda não foi confirmado com o fornecedor
     //2 - #7fdec7 Entrega da caixa vazia confirmada
