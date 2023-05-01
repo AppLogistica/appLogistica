@@ -590,31 +590,3 @@ export function SemanalDetalhe() {
     </NativeBaseProvider>
   );
 }
-
-/*                  <SelectList
-                    search={false}
-                    placeholder={selecLocalCarga === '' ? 'Selecione o local' : selecLocalCarga}
-                    // @ts-ignore
-                    setSelected={(val) => setSelecLocalCarga(val)}
-                    boxStyles={{ borderColor: '#7fdec7', borderWidth: 1.8 }}
-                    data={localCarga}
-                    save="value"
-                  />*/
-
-/*                  <SelectList
-                    
-                    search={false}
-                    boxStyles={{ borderColor: '#7fdec7', borderWidth: 1.8 }}
-                    placeholder={selectCaixaStatus === '' ? 'Selecione o status' : selectCaixaStatus}
-                    // @ts-ignore
-                    setSelected={(val) => setSelectCaixaStatus(val)}
-                    data={CaixaStatus}
-                    save="value"
-                  />*/
-
-/*                  <Button
-                    title="Cancelar"
-                    style={[{ marginBottom: 20 }, styles.buttonPdf]}
-                    
-                    leftIcon={<FontAwesome name="hand-stop-o" size={24} color="red" />}
-                  />*/
