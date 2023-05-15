@@ -196,6 +196,9 @@ export function SemanalDetalhe() {
       return
     }
 
+    const VerificaHistorico = firestore().collection('historicoStatus');
+    const snapshot = await VerificaHistorico.where('id_HistóricoSemana', '==', dadosSemanal.id_semana).get();
+
     //Caso seja alterado o numero da caixa correspondente, seja por erro ou qualquer outro motivo, uma menssagem será mostrada ao usuário confirmando a alteração
     if (dadosSemanal.id_caixa != idCaixa && dadosSemanal.id_caixa != null) {
 
@@ -269,7 +272,11 @@ export function SemanalDetalhe() {
     const minutos = data.getMinutes();
     const sec = data.getSeconds();
     const horaMinuto = `${hora}`.padStart(2, '0') + ':' + `${minutos}`.padStart(2, '0') + ':' + `${sec}`.padStart(2, '0')
-    const id_historico = `${dadosSemanal.id}.` + `${idCaixa}`.padStart(2, '0')
+
+    console.log(snapshot.size);
+
+
+    const id_historico = snapshot.size > 0 ? dadosSemanal.id_semana : `${dadosSemanal.id}.` + `${idCaixa}`.padStart(2, '0');
 
     if (dadosSemanal.id_caixa != null) {
       //Isso garante que, caso o numero da caixa seja alterado, a caixa que estava vinculada seja "liberada"
@@ -295,7 +302,7 @@ export function SemanalDetalhe() {
     } else if (id_status === 2 && id_local === 1) {
       novaCor = '#b97a56';
     }
-    
+
     //1 - gray    Ainda não foi confirmado com o fornecedor
     //2 - #7fdec7 Entrega da caixa vazia confirmada
     //3 - #4444fa vazia x caminhão
@@ -328,7 +335,7 @@ export function SemanalDetalhe() {
     }
 
     if (id_local === 3 && id_status === 2) {
-      EnviaNotify(dadosSemanal)
+      // EnviaNotify(dadosSemanal)
     }
 
     if (id_status === 3) {
@@ -580,10 +587,16 @@ export function SemanalDetalhe() {
                     onPress={reiniciaProcesso}
                   />
 
+                  <Button
+                    title="Cancelar"
+                    style={[{ marginBottom: 20 }, styles.buttonPdf]}
+                    leftIcon={<Feather name="alert-triangle" size={24} color="red" />}
+                    onPress={reiniciaProcesso}
+                  />
+
                 </View>
               </View>
             </View>
-
           </ScrollView>
         </SafeAreaView>
       </Background>
