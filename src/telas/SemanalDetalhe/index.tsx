@@ -253,7 +253,6 @@ export function SemanalDetalhe() {
     const id_status = etapaPro?.id_status as number;
     const id_local = etapaPro?.id_local as number;
 
-
     if (id_status === 3) {
       if (!await confirmaFinal()) {
         setUseEtapa(-1);
@@ -272,10 +271,6 @@ export function SemanalDetalhe() {
     const minutos = data.getMinutes();
     const sec = data.getSeconds();
     const horaMinuto = `${hora}`.padStart(2, '0') + ':' + `${minutos}`.padStart(2, '0') + ':' + `${sec}`.padStart(2, '0')
-
-    console.log(snapshot.size);
-
-
     const id_historico = snapshot.size > 0 ? dadosSemanal.id_semana : `${dadosSemanal.id}.` + `${idCaixa}`.padStart(2, '0');
 
     if (dadosSemanal.id_caixa != null) {
@@ -591,7 +586,7 @@ export function SemanalDetalhe() {
                     title="Cancelar"
                     style={[{ marginBottom: 20 }, styles.buttonPdf]}
                     leftIcon={<Feather name="alert-triangle" size={24} color="red" />}
-                    onPress={reiniciaProcesso}
+                    
                   />
 
                 </View>

@@ -317,9 +317,10 @@ export function Semanal() {
                 { alignItems: 'center' },
                 { height: 30 },
                 { justifyContent: 'center' },
-                { width: '25%' },
 
-              ]}><Text>Descarregado</Text></TouchableOpacity>
+              ]}><Text style={[
+                {marginLeft: 2.5},
+                {marginRight: 2.5}]} >Descarregado</Text></TouchableOpacity>
           </View>
 
           <FlatList
