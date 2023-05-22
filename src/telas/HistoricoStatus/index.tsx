@@ -49,7 +49,6 @@ export function HistoricoStatus() {
           }
         }) as Historico[];
 
-
         const sortData = data.sort((a, b) => {
 
           if (moment(a.data + ' ' + a.hora, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DD HH:mm:ss') > moment(b.data + ' ' + b.hora, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DD HH:mm:ss')) {
@@ -66,8 +65,6 @@ export function HistoricoStatus() {
 
     return () => subscribe();
   }
-
-
 
   useEffect(() => {
     buscaHistorico();
@@ -93,7 +90,7 @@ export function HistoricoStatus() {
             renderItem={({ item }) => (
               <View style={[{ alignItems: 'center' }]}>
                 <LinearGradient
-                  colors={TEMA.COLORS.FOOTER}
+                  colors={item.status !== 'Cancelado' ? TEMA.COLORS.FOOTER : ['red', 'red']}
                   style={styles.footer}>
 
                   <View style={[{ padding: 15 }]}>

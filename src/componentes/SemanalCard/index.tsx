@@ -175,12 +175,11 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
     if(SemanaDados.id_caixa === null) {
       setShowMenu(true);
     }
-   
   };
 
   const handleConfirm = () => {
 
-    //Faz o update da collection caixa, 
+    //Faz o update da collection semana, 
     firestore().collection('semana').doc(`${SemanaDados.id}`).update({
       cor: '#7fdec7'
     })
@@ -190,7 +189,7 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
 
   const handleCancel = () => {
 
-    //Faz o update da collection caixa, 
+    //Faz o update da collection semana, 
     firestore().collection('semana').doc(`${SemanaDados.id}`).update({
       cor: 'gray'
     })

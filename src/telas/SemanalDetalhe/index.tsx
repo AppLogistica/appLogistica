@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Location from 'expo-location';
 
-import { View, Text, Alert, ScrollView, Vibration, TouchableWithoutFeedback, Modal } from 'react-native';
+import { View, Text, Alert, ScrollView, Vibration, TouchableWithoutFeedback, Modal, TouchableOpacity } from 'react-native';
 import { Background } from "../../componentes/Backgound";
 import { Button } from "../../componentes/botao/Button";
 import { CaixaProps, LocalCaixaProps, ProcessoProps, SemanalCard, SemanaProps } from "../../componentes/SemanalCard";
@@ -15,8 +15,7 @@ import { SelectList } from 'react-native-dropdown-select-list'
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
 import { print } from "../../componentes/geraPDF";
-import { AntDesign, Feather, FontAwesome } from '@expo/vector-icons';
-
+import { AntDesign, Feather, FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { LocationObject } from "expo-location";
 import { EnviaNotify } from "../../componentes/fireNotify/envia";
 
@@ -36,14 +35,15 @@ export function SemanalDetalhe() {
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
   const quantidadeCaixa = dadosSemanal.QtdCaixa === undefined ? 1 : dadosSemanal.QtdCaixa;
-  const [processo, setProcesso] = useState<ProcessoProps[]>([])
-  const [Useetapa, setUseEtapa] = useState(-1)
-  const [stapasSalvas, setEtapasSalvas] = useState([])
+  const [processo, setProcesso] = useState<ProcessoProps[]>([]);
+  const [Useetapa, setUseEtapa] = useState(-1);
+  const [stapasSalvas, setEtapasSalvas] = useState([]);
+  const [mostraCanFin, setMostraCanFin] = useState(false);
 
   const dadosLocal: LocalCaixaProps[] = [];
   const [errorMsg, setErrorMsg] = useState({});
-
   const [selecLocalCarga, setSelecLocalCarga] = useState('');
+
   const localCarga: selectProps[] =
     [{ key: '1', value: 'CAMINHÃO' },
     { key: '2', value: 'FORNECEDOR' },
@@ -455,7 +455,11 @@ export function SemanalDetalhe() {
 
   useEffect(() => {
     pegaDadosCaixas();
-    pegaDadosUmaCaixa();
+    
+    if (dadosSemanal.cor !== 'red') {
+      pegaDadosUmaCaixa();
+    }
+
     etapasProcesso();
 
   }, []);
@@ -469,6 +473,54 @@ export function SemanalDetalhe() {
       id_status: 1,
       etapa: -1
     })
+  }
+
+  function confirmaCancelar(): Promise<boolean> {
+    return new Promise((resolve) => {
+      Alert.alert(
+        "Confirmação de Cancelamento!", "Deseja realmente cancelar essa tarefa?",
+        [{
+          text: 'Cancelar',
+          onPress: () => resolve(false),
+          style: 'cancel',
+        },
+        { text: 'OK', onPress: () => resolve(true) },],
+        { cancelable: false }
+      );
+    });
+  }
+
+  async function Cancela() {
+
+    if (!await confirmaCancelar()) {
+
+      return
+    } else {
+
+      firestore().collection('semana').doc(`${dadosSemanal.id}`).update({
+        status: '',
+        ativo: 'Inativos',
+        cor: 'red'
+      })
+
+      const data = new Date()
+      const hora = data.getHours();
+      const minutos = data.getMinutes();
+      const sec = data.getSeconds();
+      const horaMinuto = `${hora}`.padStart(2, '0') + ':' + `${minutos}`.padStart(2, '0') + ':' + `${sec}`.padStart(2, '0')
+
+      //adiciona ao histórico
+      firestore().collection('historicoStatus').add({
+        id_HistóricoSemana: dadosSemanal.id_semana,
+        id_caixa: dadosSemanal.id_caixa,
+        status: 'Cancelado',
+        local: '',
+        data: dayjs().locale('pt-br').format('DD/MM/YYYY'),
+        hora: horaMinuto
+      })
+
+      liberaCaixa();
+    }
   }
 
   return (
@@ -513,7 +565,13 @@ export function SemanalDetalhe() {
                     search={false}
                     boxStyles={{ borderColor: '#7fdec7', borderWidth: 1.8 }}
                     notFoundText={'Nenhuma caixa disponível'}
-                    placeholder={dadosSemanal.id_caixa === null ? 'Selecione a caixa' : `${dadosSemanal.id_caixa}`.padStart(2, '0')}
+                    placeholder={
+                      dadosSemanal.id_caixa === null 
+                      ? 'Selecione a caixa' 
+                      : dadosSemanal.cor === 'red'
+                      ? 'Selecione a caixa'
+                      :`${dadosSemanal.id_caixa}`.padStart(2, '0')}
+
                     // @ts-ignore
                     setSelected={(val) => setSelectNumeCaixa(val)}
                     data={numCaixa}
@@ -573,23 +631,42 @@ export function SemanalDetalhe() {
                   leftIcon={<AntDesign name="pdffile1" size={30} color="black" />}
                 />
 
-                <View style={[{}]}>
+                <TouchableOpacity
+                  onPress={() => setMostraCanFin(!mostraCanFin)}
+                  style={[
+                    { justifyContent: 'center' },
+                    { alignItems: 'center' },
+                    { backgroundColor: '#7fdec7' },
+                    { height: 40 },
+                    { marginBottom: 10 },
+                    { borderRadius: 5 }]}>
 
-                  <Button
-                    title="Reiniciar"
-                    style={[{ marginBottom: 20 }, styles.buttonPdf]}
-                    leftIcon={<Feather name="alert-triangle" size={24} color="red" />}
-                    onPress={reiniciaProcesso}
-                  />
+                  {mostraCanFin
+                    ? <FontAwesome name="arrow-up" size={24} color="black" />
+                    : <FontAwesome name="arrow-down" size={24} color="black" />}
 
-                  <Button
-                    title="Cancelar"
-                    style={[{ marginBottom: 20 }, styles.buttonPdf]}
-                    leftIcon={<Feather name="alert-triangle" size={24} color="red" />}
-                    
-                  />
+                </TouchableOpacity>
 
-                </View>
+                {mostraCanFin ?
+                  <View style={[{}]}>
+
+                    <Button
+                      title="Reiniciar"
+                      style={[{ marginBottom: 20 }, styles.buttonPdf, { marginTop: 10 }]}
+                      leftIcon={<Feather name="alert-triangle" size={24} color="red" />}
+                      onPress={reiniciaProcesso}
+                    />
+
+                    <Button
+                      title="Cancelar"
+                      style={[{ marginBottom: 20 }, styles.buttonPdf]}
+                      leftIcon={<MaterialIcons name="cancel" size={24} color="red" />}
+                      onPress={Cancela}
+                    />
+
+                  </View> : null
+                }
+
               </View>
             </View>
           </ScrollView>
