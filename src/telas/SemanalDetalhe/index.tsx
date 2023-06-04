@@ -300,12 +300,13 @@ export function SemanalDetalhe() {
 
     //1 - gray    Ainda não foi confirmado com o fornecedor
     //2 - #7fdec7 Entrega da caixa vazia confirmada
-    //3 - #4444fa vazia x caminhão
-    //4 - #e8e829 vaiza x fornecedor
-    //5 - #209b20 cheia x fornecedor
-    //6 - #FF5733 cheia x caminhão
-    //7 - #1E8449 cheia x fabrica
-    //8 - #f39c12 vaiza x fabrica -- Descarregada
+    //--------------------------------------------------------
+    //3 - etapa 1 - #4444fa vazia x caminhão
+    //4 - etapa 2 - #e8e829 vaiza x fornecedor
+    //5 - etapa 3 - #209b20 cheia x fornecedor
+    //6 - etapa 4 - #FF5733 cheia x caminhão
+    //7 - etapa 5 - #1E8449 cheia x fabrica
+    //8 - etapa 6 - #f39c12 vaiza x fabrica -- Descarregada
 
     //faz o update da collection semana
     firestore().collection('semana').doc(`${dadosSemanal.id}`).update({
