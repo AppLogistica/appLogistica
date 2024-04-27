@@ -1,5 +1,5 @@
 import { FornecedorProps } from "../../SemanalCard";
-import db from "../Database";
+import db from "../database";
 
 /**
  * INICIALIZAÇÃO DA TABELA

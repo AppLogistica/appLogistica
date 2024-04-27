@@ -15,7 +15,6 @@ import { CaixaProps, SemanalCard, SemanaProps } from "../../componentes/SemanalC
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import notifee, { AndroidImportance } from '@notifee/react-native';
 import { Button } from "../../componentes/botao/Button";
-import moment from "moment";
 
 //import { supabase } from "../../componentes/Supabase/database";
 //import { Sincroniza } from "../../componentes/DatabaseSQLite/SincronizaDados";
@@ -128,35 +127,6 @@ export function Semanal() {
     return () => subscribe();
 
   }
-
-/*
-  async function ajustaEssapoha() {
-    // console.log(dadosSemana);
-    //  fromDate(new Date('01/01/2023'));
-
-
-    dadosSemana.map(semana => {
-
-      const dataFormatada = moment(semana.data, 'DD/MM/YYYY').format('YYYY-MM-DD');
-
-      const [ano, mes, dia] = dataFormatada.split('-').map(Number);
-  
-      const data = new Date(dataFormatada + 'T03:00:00.000Z');
-
-      console.log(semana.data, data);
-
-      firestore().collection('semana').doc(semana.id).update({
-
-        DataTime: firestore.Timestamp.fromDate(data)
-      })
-
-    })
-
-    //console.log(dadosSemana.length);
-  
-
-  }
-  */
 
   // @ts-ignore
   const handleMessagingToken = async token => {

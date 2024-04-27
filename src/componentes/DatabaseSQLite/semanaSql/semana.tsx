@@ -1,5 +1,5 @@
 import { SemanaProps } from "../../SemanalCard";
-import db from "../Database";
+import db from "../database";
 
 
 db.transaction((tx) => {

@@ -1,5 +1,5 @@
 import { CaixaProps } from "../../SemanalCard";
-import db from "../Database";
+import db from "../database";
 
 /**
  * INICIALIZAÇÃO DA TABELA
@@ -30,7 +30,7 @@ const inserir = (obj: CaixaProps) => {
       //comando SQL modificável
       tx.executeSql(
         'insert into caixa (id_caixa, nome, id_status, id_local, Latitude, Longitude) values (?, ?, ?, ?, ?, ?);',
-        [obj.id, obj.nome, obj.id_status, obj.id_local, obj.latitude, obj.longitude],
+        [obj.id, obj.nome, obj.id_status, obj.id_local, obj.Latitude, obj.Longitude],
         //-----------------------
         (_, { rowsAffected, insertId }) => {
           if (rowsAffected > 0) resolve(insertId);
@@ -51,7 +51,7 @@ const update = (id: number, obj: CaixaProps | undefined) => {
       //comando SQL modificável
       tx.executeSql(
         'UPDATE caixa SET nome=?, id_local=?, id_status=2, latitude=?, longitude=? WHERE id_caixa=?;',
-        [`${obj?.nome}`, `${obj?.id_local}`, `${obj?.latitude}`, `${obj?.longitude}`, id],
+        [`${obj?.nome}`, `${obj?.id_local}`, `${obj?.Latitude}`, `${obj?.Longitude}`, id],
         //-----------------------
         (_, { rowsAffected }) => {
           if (rowsAffected > 0) resolve(rowsAffected);

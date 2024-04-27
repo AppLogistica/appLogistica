@@ -1,5 +1,5 @@
 import { EnderecoProps } from "../../SemanalCard";
-import db from "../Database";
+import db from "../database";
 
 db.transaction((tx) => {
   //<<<<<<<<<<<<<<<<<<<<<<<< USE ISSO APENAS DURANTE OS TESTES!!! >>>>>>>>>>>>>>>>>>>>>>>

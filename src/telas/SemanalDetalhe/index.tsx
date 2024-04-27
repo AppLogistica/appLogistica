@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Location from 'expo-location';
 
-import { View, Text, Alert, ScrollView, Vibration, TouchableWithoutFeedback, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, Alert, ScrollView, TouchableOpacity } from 'react-native';
 import { Background } from "../../componentes/Backgound";
 import { Button } from "../../componentes/botao/Button";
 import { CaixaProps, LocalCaixaProps, ProcessoProps, SemanalCard, SemanaProps } from "../../componentes/SemanalCard";
@@ -331,7 +331,7 @@ export function SemanalDetalhe() {
     }
 
     if (id_local === 3 && id_status === 2) {
-      // EnviaNotify(dadosSemanal)
+       EnviaNotify(dadosSemanal)
     }
 
     if (id_status === 3) {
