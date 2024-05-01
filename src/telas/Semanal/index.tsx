@@ -107,6 +107,76 @@ export function Semanal() {
     return item.ativo === filtro
   })
 
+  async function verificaTabelas () {
+
+    const Tabeas = firestore().collection('Tabelas');
+    const snapshot = await Tabeas.where('criadas', '==', true).get();
+    if (snapshot.empty) {
+      console.log('Documento não encotrado!');
+      
+      firestore().collection('status').doc('1').set({
+        id: '1',
+        nome: 'VAZIA'
+      });
+
+      firestore().collection('status').doc('2').set({
+        id: '2',
+        nome: 'CHEIA'
+      });
+
+      firestore().collection('status').doc('3').set({
+        id: '3',
+        nome: 'DESCARREGADO'
+      });
+
+      firestore().collection('ordemProceso').doc('1').set({
+        id_local: 2,
+        id_status: 1,
+        nomeLocal: 'CAMINHÃO',
+        nomeStatus: 'VAZIA'
+      });
+
+      firestore().collection('ordemProceso').doc('2').set({
+        id_local: 3,
+        id_status: 1,
+        nomeLocal: 'FORNECEDOR',
+        nomeStatus: 'VAZIA'
+      });
+
+      firestore().collection('ordemProceso').doc('3').set({
+        id_local: 3,
+        id_status: 2,
+        nomeLocal: 'FORNECEDOR',
+        nomeStatus: 'CHEIA'
+      });
+
+      firestore().collection('ordemProceso').doc('4').set({
+        id_local: 2,
+        id_status: 2,
+        nomeLocal: 'CAMINHÃO',
+        nomeStatus: 'CHEIA'
+      });
+      
+      firestore().collection('ordemProceso').doc('5').set({
+        id_local: 1,
+        id_status: 2,
+        nomeLocal: 'FABRICA',
+        nomeStatus: 'CHEIA'
+      });
+
+      firestore().collection('ordemProceso').doc('6').set({
+        id_local: 1,
+        id_status: 3,
+        nomeLocal: 'FABRICA',
+        nomeStatus: 'DESCARREGADO'
+      });
+
+      firestore().collection('Tabelas').doc('1').set({
+        criadas: true
+      });
+    }
+  }
+
   async function pegaDadosSemana() {
 
     const subscribe = await firestore()
@@ -204,6 +274,7 @@ export function Semanal() {
 
     handleInitialNotification();
     pegaDadosSemana();
+    verificaTabelas();
     messaging().registerDeviceForRemoteMessages
 
     messaging().getToken().then(handleMessagingToken);
