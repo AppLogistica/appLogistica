@@ -81,17 +81,17 @@ export function Semanal() {
     });
   }
 
-  async function handleDetalhes({ id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa, cor }: SemanaProps) {
+  async function handleDetalhes({ id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa, cor, silo }: SemanaProps) {
 
     let conf = false
 
     if (cor === 'gray' && ativo === 'Inativos') {
      // conf = await confirma();
       if (conf) {
-        navigation.navigate('semanalDetalhes', { id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa, cor });
+        navigation.navigate('semanalDetalhes', { id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa, cor, silo });
       }
     } else {
-      navigation.navigate('semanalDetalhes', { id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa, cor });
+      navigation.navigate('semanalDetalhes', { id_semana, data, id_fornecedor, id_caixa, inserido_em, id, status, ativo, QtdCaixa, cor, silo });
     }
   }
 

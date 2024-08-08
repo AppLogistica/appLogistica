@@ -65,6 +65,7 @@ export interface SemanaProps {
   QtdCaixa: number;
   //confirmado: boolean;
   cor: string;
+  silo: string;
 }
 
 export interface Historico {
@@ -164,7 +165,6 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
   useEffect(() => {
     pegaDadosUmaCaixa();
     pegaDadosFornecedor();
-
   }, [SemanaDados])
 
   const [showMenu, setShowMenu] = useState(false);
@@ -227,6 +227,15 @@ export function SemanalCard({ SemanaDados, margem, ...rest }: Props) {
               {SemanaDados.ativo === 'Finalizado' ? 'DESCARREGADO' : `Caixa ${`${SemanaDados.id_caixa}`.padStart(2, '0')} : ${selectCaixaStatus}`}
             </Text>
 
+            <Text
+              style={[
+                styles.Detalhes,
+                { opacity: SemanaDados.status === '' && SemanaDados.ativo === 'Inativos' ? 0 : 1 },
+                SemanaDados.ativo === 'Finalizado' ? { color: 'white' } : null
+              ]}
+            >
+              {SemanaDados.ativo === 'Finalizado' && SemanaDados.silo !== undefined ? `${SemanaDados.silo}` : ''}
+            </Text>
 
             <Text style={[styles.Endereco, SemanaDados.ativo === 'Finalizado' ? { color: 'white' } : null]}>
               {cidade}

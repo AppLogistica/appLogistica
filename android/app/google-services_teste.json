@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "839048842126",
-    "project_id": "applogistica-599aa",
-    "storage_bucket": "applogistica-599aa.appspot.com"
+    "project_number": "768532353757",
+    "project_id": "teste-69c09",
+    "storage_bucket": "teste-69c09.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:839048842126:android:abbe17152665d4d593f2df",
+        "mobilesdk_app_id": "1:768532353757:android:22bf2dde127e6382028134",
         "android_client_info": {
           "package_name": "com.AppLogistica"
         }
       },
       "oauth_client": [
         {
-          "client_id": "839048842126-thbg9t7pv7qjefch5jdluu7ud8j30027.apps.googleusercontent.com",
+          "client_id": "768532353757-5hpdt773ejti1aem7fdhqs328ibkarok.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBPd-4HlWna0bnEaYd2dGdISVqnl5H1ioI"
+          "current_key": "AIzaSyAiJV8PCr-if8U3s5kMPEp4QK5aVZy-xgY"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "839048842126-thbg9t7pv7qjefch5jdluu7ud8j30027.apps.googleusercontent.com",
+              "client_id": "768532353757-5hpdt773ejti1aem7fdhqs328ibkarok.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

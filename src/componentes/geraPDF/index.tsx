@@ -31,6 +31,7 @@ async function generateHTML(NomeFornecedor: string, recibo: SemanaProps, hora: s
         <div style=" margin: 10px; width: 100%;">
           <h3>Fornecedor: ${recibo.id_fornecedor} : ${NomeFornecedor}</h3>
           <h3>Caixa Nº ${ JSON.stringify(recibo.id_caixa).padStart(2,'0')} </h3>
+          <h3>Descarregado: ${recibo.silo}</h3>
           <div style="display: flex; justify-content: space-between"> 
             <h4 style=" margin: 0; padding: 5px;">Recibo gerado no dia ${recibo.data} as ${hora}</h4>
             <h4 style="text-align: right; margin: 0; padding: 5px;"> Assinatura:    _____________________________ </h4>

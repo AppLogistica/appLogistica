@@ -55,6 +55,59 @@ export function SemanalDetalhe() {
     { key: '2', value: 'CHEIA' },
     { key: '3', value: 'DESCARREGADO' }]
 
+  const [selectedSilo, setSelectedSilo] = useState('');
+  const silos = [
+    { key: '1', value: 'Silo 1' },
+    { key: '2', value: 'Silo 2' },
+    { key: '3', value: 'Silo 3' },
+    { key: '4', value: 'Silo 4' },
+  ];
+
+  // Função para buscar o valor do silo no Firestore
+  const fetchSiloFromFirestore = async () => {
+    try {
+      const doc = await firestore()
+        .collection('semana')
+        .doc(dadosSemanal.id)
+        .get();
+
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.silo) {
+          setSelectedSilo(data.silo);
+        }
+      }
+    } catch (error) {
+      Alert.alert('Erro', 'Houve um erro ao buscar o silo. Tente novamente.');
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSiloFromFirestore();
+  }, []);
+
+  const saveSiloToFirestore = async () => {
+    if (!selectedSilo) {
+      Alert.alert('Erro', 'Por favor, selecione um silo antes de salvar.');
+      return;
+    }
+
+    try {
+      await firestore()
+        .collection('semana')
+        .doc(dadosSemanal.id)
+        .update({ silo: selectedSilo });
+        
+      Alert.alert('Sucesso', 'Silo salvo com sucesso!');
+      handleGoBack();
+      console.log(dadosSemanal.id)
+    } catch (error) {
+      Alert.alert('Erro', 'Houve um erro ao salvar o silo. Tente novamente.');
+      console.error(error);
+    }
+  };
+
   const [selectNumeCaixa, setSelectNumeCaixa] = useState('');
   const [numCaixa, setNumCaixa] = useState<selectProps[]>([]);
 
@@ -631,6 +684,28 @@ export function SemanalDetalhe() {
                   onPress={() => print(dadosSemanal)}
                   leftIcon={<AntDesign name="pdffile1" size={30} color="black" />}
                 />
+
+                <View style={{ marginBottom: 20 }}>
+                  {dadosSemanal.ativo === 'Finalizado' && (
+                    <>
+                      <Text>Onde foi despositado?</Text>
+                      <SelectList
+                        search={false}
+                        setSelected={setSelectedSilo}
+                        data={silos}
+                        save="value"
+                        placeholder="Selecione um Silo"
+                        defaultOption={{ key: selectedSilo, value: selectedSilo }}
+                        boxStyles={{ borderColor: '#7fdec7', borderWidth: 1.8 }}
+                      />
+                      <Button
+                        title="Salvar Silo"
+                        style={[{ marginBottom: 20 }, styles.buttonPdf, dadosSemanal.ativo === 'Finalizado' ? { marginTop: 20 } : null]}
+                        onPress={saveSiloToFirestore}
+                      />
+                    </>
+                  )}
+                </View>
 
                 <TouchableOpacity
                   onPress={() => setMostraCanFin(!mostraCanFin)}
